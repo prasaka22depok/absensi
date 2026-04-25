@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PRASAKA22-ABSENSI</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --glass: rgba(255,255,255,0.08); --border: rgba(255,255,255,0.1); --primary: #38bdf8; --danger: #fb7185; --success: #4ade80; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans',sans-serif; }
+        body { background: radial-gradient(circle at top right, #1e293b, #020617); height:100vh; overflow:hidden; color:white; }
+        #splash { position:fixed; inset:0; background:#020617; display:flex; justify-content:center; align-items:center; z-index:2000; transition: 0.5s; cursor: pointer; }
+        .typing { font-size:1rem; border-right:2px solid var(--primary); white-space:nowrap; overflow:hidden; width:0; animation:typing 1.2s steps(20) forwards; letter-spacing:3px; font-weight:800; color:var(--primary); }
+        @keyframes typing { from { width:0 } to { width:220px } }
+        #auth-screen { position:fixed; inset:0; background:#020617; z-index:1500; display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
+        .auth-card { animation: slideUp 0.6s ease-out; margin: auto; }
+        @keyframes slideUp { from { opacity:0; transform: translateY(30px); } to { opacity:1; transform: translateY(0); } }
+        #sidebar { position:fixed; left:-280px; top:0; width:280px; height:100%; background:rgba(2,6,23,0.95); backdrop-filter:blur(20px); border-right:1px solid var(--border); z-index:1000; transition:0.4s ease; padding:40px 20px; display:flex; flex-direction:column; }
+        #sidebar.active { left:0; }
+        .menu-item { display:flex; align-items:center; padding:16px; margin-bottom:8px; border-radius:16px; cursor:pointer; color:rgba(255,255,255,0.6); }
+        .menu-item.active { background:var(--primary); color:#020617; font-weight:800; }
+        .overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; z-index:999; }
+        header { padding:20px; display:flex; justify-content:space-between; align-items:center; }
+        .page { display:none; padding:0 20px 20px; height:calc(100vh - 80px); overflow-y:auto; }
+        .page.active { display:block; }
+        .glass-card { background:var(--glass); backdrop-filter:blur(12px); border:1px solid var(--border); border-radius:24px; padding:20px; margin-bottom:15px; }
+        .btn { padding:18px; border:none; border-radius:20px; font-weight:800; cursor:pointer; transition:0.2s; font-size:0.9rem; text-transform: uppercase; }
+        .btn-main { background:white; color:#020617; width:100%; }
+        .btn-ghost { background:var(--glass); color:white; border:1px solid var(--border); width:100%; }
+        #reader { width:100%; max-width: 250px; margin: 0 auto 15px auto; border-radius:20px; overflow:hidden; display:none; border:2px solid var(--primary); aspect-ratio: 1/1; }
+        
+        select option { color: #000; background: #fff; } 
+
+        #sys-dialog { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); }
+        .glass-card-popup { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 35px; padding: 40px 30px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transform: scale(0.8); opacity: 0; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        #sys-dialog.active .glass-card-popup { transform: scale(1); opacity: 1; }
+
+        /* Dynamic Popup Styles */
+        .msg-alert { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; text-align: center; background: none; padding: 0; border: none; max-height: none; white-space: pre-wrap; }
+        .msg-long { font-size: 13px; font-weight: 500; color: #cbd5e1; text-transform: none; letter-spacing: normal; text-align: left; background: rgba(0,0,0,0.4); padding: 20px; border-radius: 16px; max-height: 55vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.05); white-space: pre-wrap; word-wrap: break-word; box-shadow: inset 0 4px 10px rgba(0,0,0,0.3); }
+        .msg-long::-webkit-scrollbar { width: 4px; }
+        .msg-long::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div id="permission-screen" style="position:fixed; inset:0; background:rgba(2,6,23,0.98); backdrop-filter:blur(10px); z-index:4000; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:30px; text-align:center; transition: 0.5s ease;">
+        <div class="glass-card" style="max-width:350px; border-color: rgba(56, 189, 248, 0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <div class="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
+                <i data-lucide="shield-alert" class="w-10 h-10 text-blue-400" style="animation: pulse 2s infinite;"></i>
+            </div>
+            <h2 class="font-black text-xl mb-3 text-white uppercase tracking-widest">Akses Dibutuhkan</h2>
+            <p class="text-[11px] text-gray-400 mb-8 font-bold leading-relaxed text-left bg-black/20 p-4 rounded-xl border border-white/5">
+                Assalamualaikum Kang/Teh! 🙏<br><br>
+                Biar sistem radar absensi berjalan akurat dan menghindari "titip absen", sistem wajib mengakses <b class="text-blue-400">Lokasi (GPS)</b> dan <b class="text-blue-400">Kamera</b> HP kamu.<br><br>
+                <span class="text-red-400 italic">*Tanpa izin ini, aplikasi tidak akan bisa dibuka.</span>
+            </p>
+            <button onclick="mintaIzinSistem()" id="btn-izin-sistem" class="w-full bg-blue-500 text-slate-900 py-4 rounded-[20px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-blue-500/20">
+                SAYA MENGERTI & IZINKAN
+            </button>
+        </div>
+    </div>
+
+    <div id="splash" onclick="this.remove()"><div class="typing">ABSEN PRASAKA22</div></div>
+
+    <div id="sys-dialog">
+        <div class="glass-card-popup" id="sys-dialog-card">
+            <div id="sys-dialog-icon" class="mx-auto mb-5 flex items-center justify-center rounded-full bg-white/5 border border-white/10" style="width: 80px; height: 80px; margin: 0 auto 20px;"></div>
+            <h3 id="sys-dialog-title" class="text-2xl font-black uppercase mb-4 tracking-tighter" style="font-size: 24px; font-weight: 900;">TITLE</h3>
+            
+            <div id="sys-dialog-msg" class="mb-8 leading-relaxed msg-alert">Message</div>
+            
+            <input type="text" id="sys-dialog-input" class="hidden w-full p-4 bg-black/20 border border-white/10 rounded-2xl mb-6 text-center font-bold outline-none text-white focus:border-blue-500 transition-all" autocomplete="off" placeholder="••••••">
+            <div id="sys-dialog-btns" class="flex gap-3" style="display:flex; gap:12px;"></div>
+        </div>
+    </div>
+
+    <div id="auth-screen">
+        <div class="w-full max-w-sm glass-card text-center auth-card my-10">
+           <img id="app-logo" src="LINK_LOGO_LU_DI_SINI" class="w-20 h-20 mx-auto mb-6 object-contain">
+            
+            <div id="login-form">
+                <h2 class="text-xl font-black text-blue-400 mb-6 uppercase tracking-widest">Login Anggota</h2>
+                <input type="text" id="l-name" placeholder="NAMA LENGKAP" class="w-full p-4 bg-white/5 border border-white/10 rounded-2xl mb-4 uppercase font-bold text-center outline-none focus:border-blue-500 text-white">
+                <input type="password" id="l-pin" placeholder="PIN" class="w-full p-4 bg-white/5 border border-white/10 rounded-2xl mb-6 text-center tracking-[1em] font-bold outline-none focus:border-blue-500 text-white">
+                <button onclick="prosesLogin()" id="btn-login" class="w-full bg-blue-500 text-slate-900 py-4 rounded-[20px] font-black uppercase active:scale-95 transition-all">Masuk</button>
+                <p class="text-[10px] text-gray-400 mt-4 uppercase">Baru? <button onclick="toggleAuth()" class="text-blue-400 font-bold underline">Daftar</button></p>
+            </div>
+            
+            <div id="reg-form" class="hidden text-left">
+                <h2 class="text-xl font-black text-green-400 mb-6 uppercase text-center tracking-widest">Registrasi</h2>
+                <input type="text" id="r-name" placeholder="NAMA LENGKAP" class="w-full p-4 bg-white/5 border border-white/10 rounded-2xl mb-3 uppercase font-bold text-center outline-none text-white">
+                <input type="email" id="r-email" placeholder="EMAIL AKTIF" class="w-full p-4 bg-white/5 border border-white/10 rounded-2xl mb-3 font-bold text-center outline-none text-white">
+                
+                <select id="r-role" class="w-full p-4 bg-white/5 border border-white/10 rounded-2xl mb-3 font-bold text-center outline-none text-white appearance-none">
+                    <option value="" disabled selected>-- PILIH ROLE --</option>
+                    <option value="PELATIH">PELATIH</option>
+                    <option value="STRUKTUR">STRUKTUR</option>
+                    <option value="ANGGOTA">ANGGOTA</option>
+                </select>
+                <div class="flex gap-3 mb-3">
+                    <input type="text" id="r-kelas" placeholder="KELAS" class="w-1/2 p-4 bg-white/5 border border-white/10 rounded-2xl uppercase font-bold text-center outline-none text-white">
+                    <input type="number" id="r-angkatan" placeholder="ANGKATAN" class="w-1/2 p-4 bg-white/5 border border-white/10 rounded-2xl font-bold text-center outline-none text-white">
+                </div>
+                <input type="tel" id="r-phone" placeholder="NOMOR HP/WA" class="w-full p-4 bg-white/5 border border-white/10 rounded-2xl mb-3 font-bold text-center outline-none text-white">
+                <input type="password" id="r-pin" placeholder="PIN BARU" class="w-full p-4 bg-white/5 border border-white/10 rounded-2xl mb-6 text-center tracking-[1em] font-bold outline-none text-white">
+                <button onclick="prosesRegister()" id="btn-reg" class="w-full bg-green-500 text-slate-900 py-4 rounded-[20px] font-black uppercase active:scale-95 transition-all">Ajukan</button>
+                <button onclick="toggleAuth()" class="text-[10px] text-gray-400 mt-4 uppercase underline w-full text-center">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden">
+        <div id="sidebar">
+            <h2 class="text-blue-400 font-black mb-10 tracking-widest uppercase">Prasaka</h2>
+            <div class="menu-item active" onclick="showPage('home', this)"><i data-lucide="home"></i><span class="ml-4 font-bold text-sm">Beranda</span></div>
+            <div class="menu-item" onclick="showPage('profile', this)"><i data-lucide="user"></i><span class="ml-4 font-bold text-sm">Profil</span></div>
+            <div class="menu-item" onclick="showPage('history', this)"><i data-lucide="file-text"></i><span class="ml-4 font-bold text-sm">Riwayat</span></div>
+            <button onclick="logout()" class="mt-auto flex items-center p-4 text-red-400 font-bold uppercase"><i data-lucide="log-out"></i><span class="ml-4 text-sm">Keluar</span></button>
+        </div>
+        <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+        <header>
+            <button onclick="toggleSidebar()"><i data-lucide="menu"></i></button>
+            <div class="text-center"><p class="text-[0.5rem] text-gray-500 font-bold uppercase" id="user-head">COMMANDS</p><b id="header-title" class="text-xs uppercase text-white tracking-widest">BERANDA</b></div>
+            
+            <div style="position:relative; cursor:pointer; padding:5px;" onclick="bukaNotif()">
+                <i data-lucide="bell" id="bell-icon" style="opacity:0.3; transition: 0.3s;"></i>
+                <span id="notif-dot" class="hidden" style="position:absolute; top:2px; right:2px; width:10px; height:10px; background:var(--danger); border-radius:50%; border:2px solid #020617; box-shadow: 0 0 5px var(--danger);"></span>
+            </div>
+        </header>
+
+        <div id="home" class="page active">
+            <div class="bg-blue-500/10 p-2 rounded-lg mb-4 text-center overflow-hidden hidden" id="marquee-container"></div>
+            
+            <div class="glass-card text-center border-none bg-none mb-2">
+                <p id="date" class="text-[10px] opacity-60 uppercase font-bold mb-1"></p>
+                <h1 id="clock" class="text-6xl font-black tracking-tighter">00:00</h1>
+            </div>
+            <div class="glass-card text-center">
+                <div id="reader"></div>
+                <div id="ui-idle" class="py-10">
+                    <div class="bg-white/5 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
+                        <i data-lucide="qr-code" class="text-blue-400 w-8 h-8"></i>
+                    </div>
+                    <p class="text-xs opacity-70 font-bold uppercase tracking-widest">Siap Melapor!</p>
+                </div>
+                <div id="scan-controls" class="flex gap-3">
+                    <button id="btn-scan" class="btn btn-main flex-[2]" onclick="startScan()">SCAN MASUK</button>
+                    <button id="btn-izin" class="btn btn-ghost flex-[1]" onclick="requestIzin()">IZIN</button>
+                </div>
+                <button id="btn-stop" class="btn bg-red-500 text-white w-full hidden" onclick="stopScan()">BATALKAN SCAN</button>
+            </div>
+        </div>
+
+        <div id="profile" class="page">
+            <div id="profile-content"></div>
+        </div>
+
+        <div id="history" class="page">
+            <h3 class="text-[10px] font-black text-blue-400 uppercase mb-4 tracking-widest flex justify-between items-center">
+                <span>Riwayat Melapor</span>
+                <button onclick="syncData()" class="text-gray-400"><i data-lucide="refresh-cw" class="w-3 h-3"></i></button>
+            </h3>
+            <div id="log-container"></div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        let html5QrCode = null; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxieMyuN0q4QbCHIQAYj4gMKj1U-AlF2NM1Elbvs11MITj5Wrgdafblkd-YkqDFFeUJ/exec"; 
+        
+        let isScanning = false;
+        let dbLogs = []; 
+        const beepSfx = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3");
+        let config = { time: "", tol: 0, lat: "", lng: "", ann: "", marquee: "" }, dbSiswa = [];
+        
+        let authUser = null;
+        try {
+            authUser = JSON.parse(localStorage.getItem('paskib_auth')) || null;
+        } catch(e) { console.warn("Storage diblokir browser"); }
+
+        // FUNGSI GATEKEEPER IZIN LOKASI & KAMERA
+        async function mintaIzinSistem() {
+            const btn = document.getElementById('btn-izin-sistem');
+            const screen = document.getElementById('permission-screen');
+            
+            btn.innerText = "MENGAKSES GPS...";
+            btn.style.opacity = "0.7";
+            btn.disabled = true;
+
+            try {
+                // 1. Paksa minta izin GPS
+                await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 });
+                });
+
+                btn.innerText = "MENGAKSES KAMERA...";
+                
+                // 2. Paksa minta izin Kamera
+                await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+
+                // Kalau lolos dua-duanya, kasih animasi ngilang yang mulus
+                btn.innerText = "AKSES DITERIMA!";
+                btn.classList.replace('bg-blue-500', 'bg-green-500');
+                
+                setTimeout(() => {
+                    screen.style.opacity = '0';
+                    screen.style.transform = 'scale(1.1)';
+                    setTimeout(() => screen.remove(), 500);
+                }, 800);
+
+            } catch (err) {
+                // Kalau ada salah satu yang ditolak/diblokir
+                btn.innerText = "SAYA MENGERTI & IZINKAN";
+                btn.style.opacity = "1";
+                btn.disabled = false;
+                
+                showSysDialog({
+                    title: "IZIN DITOLAK!", 
+                    msg: "Akses diblokir oleh browser! Buka pengaturan situs di browser kamu, lalu Izinkan Kamera dan Lokasi. Refresh halaman kalau sudah.", 
+                    type: "error", 
+                    color: "var(--danger)"
+                });
+            }
+        }
+
+        function showSysDialog(opts) {
+            return new Promise((resolve) => {
+                const el = document.getElementById('sys-dialog');
+                const msgEl = document.getElementById('sys-dialog-msg');
+                const input = document.getElementById('sys-dialog-input');
+                
+                document.getElementById('sys-dialog-title').innerText = opts.title || "INFO";
+                document.getElementById('sys-dialog-title').style.color = opts.color || "var(--primary)";
+                
+                // Set isi teks
+                msgEl.innerText = opts.msg || "";
+                
+                // LOGIC BARU: Cek apakah ini mode pengumuman panjang atau alert biasa
+                if (opts.isLongText) {
+                    msgEl.className = "mb-8 leading-relaxed msg-long";
+                } else {
+                    msgEl.className = "mb-8 leading-relaxed msg-alert";
+                }
+                
+                const iconContainer = document.getElementById('sys-dialog-icon');
+                let iconName = opts.type === 'error' ? 'alert-triangle' : (opts.type === 'success' ? 'check-circle' : (opts.type === 'notif' ? 'bell-ring' : 'info'));
+                iconContainer.innerHTML = `<i data-lucide="${iconName}" style="width:40px; height:40px; color: ${opts.color || 'var(--primary)'}"></i>`;
+
+                if(opts.prompt) { 
+                    input.classList.remove('hidden'); 
+                    input.value = ''; 
+                    input.placeholder = opts.placeholder || "Ketik di sini...";
+                    setTimeout(() => input.focus(), 100); 
+                } else { input.classList.add('hidden'); }
+
+                const btns = document.getElementById('sys-dialog-btns');
+                btns.innerHTML = '';
+                
+                if(opts.showCancel) {
+                    const btnC = document.createElement('button');
+                    btnC.style.cssText = "flex: 1; padding: 16px; border-radius: 16px; font-weight: 900; text-transform: uppercase; font-size: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; cursor: pointer;";
+                    btnC.innerText = "BATAL"; btnC.onclick = () => { closeSysDialog(); resolve(null); };
+                    btns.appendChild(btnC);
+                }
+                
+                const btnO = document.createElement('button');
+                btnO.style.cssText = "flex: 1; padding: 16px; border-radius: 16px; font-weight: 900; text-transform: uppercase; font-size: 10px; color: #0f172a; cursor: pointer; border: none; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);";
+                btnO.style.background = opts.color || "var(--primary)";
+                btnO.innerText = opts.confirmText || "OKE SIAP!";
+                btnO.onclick = () => { 
+                    const val = opts.prompt ? input.value.trim() : true; 
+                    if(opts.prompt && !val) return; 
+                    closeSysDialog(); resolve(val); 
+                };
+                btns.appendChild(btnO);
+
+                el.style.display = 'flex'; lucide.createIcons();
+                setTimeout(() => el.classList.add('active'), 10);
+            });
+        }
+
+        function closeSysDialog() {
+            const el = document.getElementById('sys-dialog');
+            el.classList.remove('active');
+            setTimeout(() => { el.style.display = 'none'; }, 300);
+        }
+
+        function requestData(params) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const response = await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: new URLSearchParams(params) 
+                    });
+                    
+                    if (!response.ok) throw new Error("Koneksi Error");
+                    
+                    const data = await response.json();
+                    resolve(data);
+                } catch (error) {
+                    console.error("Gagal Request:", error);
+                    reject(new Error("Koneksi Terputus!"));
+                }
+            });
+        }
+
+        function cekApakahTerlambat(jamJadwalRaw, toleransiMenitRaw) {
+            if (!jamJadwalRaw) return false;
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            let jadwalJam = 0; let jadwalMenit = 0;
+            let strJadwal = String(jamJadwalRaw).trim().replace(/'/g, ''); 
+
+            if (strJadwal.includes('T')) {
+                const tempDate = new Date(strJadwal);
+                jadwalJam = tempDate.getHours(); jadwalMenit = tempDate.getMinutes();
+            } else if (strJadwal.includes(':') || strJadwal.includes('.')) {
+                const parts = strJadwal.replace('.', ':').split(':');
+                if (parts.length >= 2) { jadwalJam = parseInt(parts[0], 10); jadwalMenit = parseInt(parts[1], 10); }
+            } else { return false; }
+
+            const toleransi = parseInt(toleransiMenitRaw, 10) || 0;
+            return ((currentHour * 60) + currentMinute) > ((jadwalJam * 60) + jadwalMenit + toleransi);
+        }
+
+        function hitungJarak(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; const p1 = lat1 * Math.PI/180; const p2 = lat2 * Math.PI/180;
+            const dp = (lat2-lat1) * Math.PI/180; const dl = (lon2-lon1) * Math.PI/180;
+            const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        }
+
+        async function syncData() {
+            try {
+                const data = await requestData(`auth=true`);
+                dbSiswa = data.siswa || []; config = data.config || config; dbLogs = data.logs || []; 
+                
+                const marqueeBox = document.getElementById('marquee-container');
+                if (config.marquee && config.marquee.trim() !== "") {
+                    marqueeBox.innerHTML = `<marquee scrollamount="5" class="text-[11px] font-black text-blue-400 uppercase">${config.marquee}</marquee>`;
+                    marqueeBox.classList.remove('hidden');
+                } else {
+                    marqueeBox.classList.add('hidden');
+                }
+
+                const dot = document.getElementById('notif-dot');
+                const bell = document.getElementById('bell-icon');
+                
+                if (config.ann && config.ann.trim() !== "") {
+                    if(localStorage.getItem('last_notif_read') !== config.ann) {
+                        dot.classList.remove('hidden');
+                        bell.style.color = "var(--primary)";
+                        bell.style.opacity = "1";
+                    } else {
+                        dot.classList.add('hidden');
+                        bell.style.color = "currentColor";
+                        bell.style.opacity = "0.3";
+                    }
+                } else {
+                    dot.classList.add('hidden');
+                    bell.style.color = "currentColor";
+                    bell.style.opacity = "0.3";
+                }
+                
+                if(authUser) {
+                    const current = dbSiswa.find(s => s.nama === authUser.nama);
+                    if(current && current.status === "ACTIVE") {
+                        localStorage.setItem('paskib_auth', JSON.stringify(current)); authUser = current;
+                        renderProfile(); renderLogs();
+                    } else if (current && current.status !== "ACTIVE") { logout(); }
+                }
+            } catch(e) { console.log("Sync Error / Offline Mode"); }
+        }
+
+        function bukaNotif() {
+            let ann = config.ann;
+            if (!ann || ann.trim() === "") {
+                ann = "Siap! Belum ada pengumuman atau instruksi terbaru hari ini. Tetap stand-by!";
+            } else {
+                localStorage.setItem('last_notif_read', config.ann);
+                document.getElementById('notif-dot').classList.add('hidden');
+                document.getElementById('bell-icon').style.color = "currentColor";
+                document.getElementById('bell-icon').style.opacity = "0.3";
+            }
+
+            showSysDialog({
+                title: "Pengumuman", 
+                msg: ann, 
+                type: "notif", 
+                color: "var(--primary)",
+                isLongText: true, 
+                confirmText: "SIAP, MENGERTI!"
+            });
+        }
+
+        async function startScan() {
+            if (isScanning) return;
+            beepSfx.play().then(() => { beepSfx.pause(); beepSfx.currentTime = 0; }).catch(e => {});
+            
+            document.getElementById('btn-scan').innerText = "MENGECEK LOKASI...";
+            await syncData(); 
+
+            let jadwalAktif = config.time || config.waktuLatihan;
+
+            if (!jadwalAktif || String(jadwalAktif).trim() === "") { 
+                document.getElementById('btn-scan').innerText = "SCAN MASUK";
+                return await showSysDialog({title: "DITOLAK", msg: "Jadwal Latihan Sedang Kosong.", type: "error", color: "var(--danger)"}); 
+            }
+
+            const nowStr = new Date().toLocaleDateString('id-ID').substring(0,10);
+            const sudahAbsen = dbLogs.find(l => l.nama === authUser.nama && String(l.tanggal).includes(nowStr));
+            if (sudahAbsen) {
+                document.getElementById('btn-scan').innerText = "SCAN MASUK";
+                return await showSysDialog({title: "SUDAH ABSEN", msg: "Anda sudah melakukan absen hari ini.", type: "error", color: "var(--danger)"});
+            }
+
+            if (config.lat && config.lng) {
+                if (!navigator.geolocation) return alert("Browser tidak support GPS!");
+                
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const targetLat = parseFloat(String(config.lat).replace(/,/g, '.').replace(/[^\d.-]/g, ''));
+                        const targetLng = parseFloat(String(config.lng).replace(/,/g, '.').replace(/[^\d.-]/g, ''));
+
+                        const hpLat = pos.coords.latitude;
+                        const hpLng = pos.coords.longitude;
+
+                        if (isNaN(targetLat) || isNaN(targetLng)) {
+                            bukaKameraScanner();
+                            return;
+                        }
+
+                        const jarak = hitungJarak(hpLat, hpLng, targetLat, targetLng);
+                        const radiusBatas = parseInt(config.tol) || 100;
+
+                        if (jarak > radiusBatas) { 
+                            document.getElementById('btn-scan').innerText = "SCAN MASUK";
+                            showSysDialog({
+                                title: "JARAK TERLALU JAUH", 
+                                msg: `Jarak: ${Math.round(jarak)} meter.\nMaksimal ${radiusBatas}m dari titik kumpul!`, 
+                                type: "error", 
+                                color: "var(--danger)"
+                            });
+                        } else { 
+                            bukaKameraScanner(); 
+                        }
+                    },
+                    (err) => {
+                        document.getElementById('btn-scan').innerText = "SCAN MASUK";
+                        showSysDialog({title: "GPS ERROR", msg: "Aktifkan izin lokasi GPS di browser/HP lu!", type: "error", color: "var(--danger)"});
+                    }, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+                );
+            } else { bukaKameraScanner(); }
+        }
+
+        function bukaKameraScanner() {
+            document.getElementById('btn-scan').innerText = "SCAN MASUK";
+            document.getElementById('reader').style.display = 'block'; 
+            document.getElementById('ui-idle').style.display = 'none'; 
+            document.getElementById('scan-controls').style.display = 'none'; 
+            document.getElementById('btn-stop').style.display = 'block';
+            isScanning = true;
+
+            if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+
+            html5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 15, qrbox: { width: 250, height: 250 } }, 
+                async (txt) => {
+                    stopScan(); 
+                    
+                    beepSfx.play().catch(e => console.log(e));
+                    document.getElementById('btn-scan').innerText = "MENYIMPAN DATA...";
+
+                    const d = new Date();
+                    const today = d.getDate().toString().padStart(2,'0') + (d.getMonth()+1).toString().padStart(2,'0') + d.getFullYear();
+                    
+                    if (!txt.includes(`PRASAKA22_ABSEN_${today}`)) {
+                        document.getElementById('btn-scan').innerText = "SCAN MASUK";
+                        return await showSysDialog({title: "QR BASI!", msg: "QR Code ini kadaluarsa atau palsu!", type: "error", color: "var(--danger)"});
+                    }
+
+                    const now = new Date();
+                    const jamSekarangString = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+                    
+                    let jadwalAktif = config.time || config.waktuLatihan;
+                    let toleransiJam = 0; 
+                    
+                    const isLate = cekApakahTerlambat(jadwalAktif, toleransiJam);
+                    const statusAbsen = isLate ? "TERLAMBAT" : "TEPAT WAKTU";
+                    
+                    const logParams = `action=attendance&nama=${encodeURIComponent(authUser.nama)}&date=${now.toLocaleDateString('id-ID')}&time=${jamSekarangString}&status=${statusAbsen}&ket=Scan QR&poin=${isLate ? "-10" : "5"}`;
+                    
+                    try {
+                        await requestData(logParams);
+                        syncData(); 
+                        document.getElementById('btn-scan').innerText = "SCAN MASUK";
+                        await showSysDialog({title: statusAbsen, msg: `Lapor masuk: ${jamSekarangString}\nStatus: ${statusAbsen}`, type: isLate ? "error" : "success", color: isLate ? "var(--danger)" : "var(--success)"});
+                    } catch (error) {
+                        document.getElementById('btn-scan').innerText = "SCAN MASUK";
+                        await showSysDialog({title: "GAGAL", msg: "Koneksi buruk, data gagal dikirim.", type: "error", color: "var(--danger)"});
+                    }
+                }
+            ).catch(err => {
+                stopScan();
+                showSysDialog({title: "KAMERA ERROR", msg: "Pastikan izin kamera browser diaktifkan.", type: "error", color: "var(--danger)"});
+            });
+        }
+
+        function stopScan() {
+            if (!isScanning) return;
+            isScanning = false;
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('reader').style.display = 'none';
+                    document.getElementById('ui-idle').style.display = 'block';
+                    document.getElementById('scan-controls').style.display = 'flex';
+                    document.getElementById('btn-stop').style.display = 'none';
+                }).catch(e => {
+                    document.getElementById('reader').style.display = 'none';
+                    document.getElementById('ui-idle').style.display = 'block';
+                    document.getElementById('scan-controls').style.display = 'flex';
+                    document.getElementById('btn-stop').style.display = 'none';
+                });
+            }
+        }
+        
+        async function hapusLog(rowId) {
+            if(!rowId) return;
+            const ok = await showSysDialog({
+                title: "HAPUS RIWAYAT", 
+                msg: "Yakin ingin menghapus riwayat absen ini?", 
+                showCancel: true, confirmText: "HAPUS", color: "var(--danger)"
+            });
+            if(!ok) return;
+            
+            try {
+                await requestData(`action=deleteData&targetSheet=Sheet1&rowId=${rowId}`);
+                await syncData();
+                await showSysDialog({title: "TERHAPUS", msg: "Riwayat absen berhasil dihapus.", type: "success", color: "var(--success)"});
+            } catch(e) {
+                await showSysDialog({title: "GAGAL", msg: "Gagal menghapus data ke server.", type: "error", color: "var(--danger)"});
+            }
+        }
+
+        function logout() { localStorage.removeItem('paskib_auth'); location.reload(); }
+        function toggleAuth() { document.getElementById('login-form').classList.toggle('hidden'); document.getElementById('reg-form').classList.toggle('hidden'); }
+        function showPage(id, el) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active')); document.getElementById(id).classList.add('active'); el.classList.add('active'); document.getElementById('header-title').innerText = id === 'home' ? 'Beranda' : id; if(id === 'history') { syncData(); } toggleSidebar(); }
+        function toggleSidebar() { const sb = document.getElementById('sidebar'); sb.classList.toggle('active'); document.getElementById('overlay').style.display = sb.classList.contains('active') ? 'block' : 'none'; }
+        
+        async function requestIzin() { 
+            let jadwalAktif = config.time || config.waktuLatihan;
+            if (!jadwalAktif || String(jadwalAktif).trim() === "") { 
+                return await showSysDialog({title: "AKSES DITOLAK", msg: "TIDAK ADA JADWAL LATIHAN HARI INI.", type: "error", color: "var(--danger)"}); 
+            }
+
+            const nowStr = new Date().toLocaleDateString('id-ID').substring(0,10);
+            const sudahAbsen = dbLogs.find(l => l.nama === authUser.nama && String(l.tanggal).includes(nowStr));
+            if (sudahAbsen) {
+                return await showSysDialog({title: "SUDAH ABSEN", msg: "Anda sudah melakukan absen/izin hari ini.", type: "error", color: "var(--danger)"});
+            }
+
+            const a = await showSysDialog({title: "FORM IZIN", msg: "Masukkan alasan izin latihan:", prompt: true, placeholder: "Contoh: Sakit...", showCancel: true, confirmText: "KIRIM"});
+            
+            if(a) { 
+                const now = new Date(); 
+                const t = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0'); 
+                const logParams = `action=attendance&nama=${encodeURIComponent(authUser.nama)}&date=${now.toLocaleDateString('id-ID')}&time=${t}&status=IZIN&poin=0&ket=${encodeURIComponent(a)}`;
+                
+                await requestData(logParams); 
+                await syncData(); 
+                
+                await showSysDialog({title: "IZIN TERDATA", msg: "Laporan izin berhasil dikirim.", type: "success", color: "var(--success)"}); 
+            } 
+        }
+
+        function renderProfile() { 
+            if(authUser) {
+                document.getElementById('profile-content').innerHTML = `
+                <div class="glass-card text-center py-10">
+                    <div class="w-20 h-20 bg-blue-500 rounded-3xl flex items-center justify-center mx-auto text-3xl font-black text-slate-900 mb-6 shadow-xl shadow-blue-500/20">${authUser.nama.charAt(0)}</div>
+                    <h2 class="text-xl font-black uppercase text-white">${authUser.nama}</h2>
+                    <p class="text-blue-400 font-bold text-[10px] uppercase tracking-widest mt-1">${authUser.role || 'ANGGOTA'} | ANGKATAN ${authUser.angkatan || '-'}</p>
+                    <div class="mt-8 flex flex-col gap-3">
+                        <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex justify-between items-center text-left"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">STATUS</span><span class="status-badge ${authUser.status==='ACTIVE'?'badge-active':'badge-pending'}">${authUser.status}</span></div>
+                        <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex justify-between items-center text-left"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">KELAS</span><span class="text-xs font-black text-white uppercase">${authUser.kelas || '-'}</span></div>
+                        <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex justify-between items-center text-left"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">NO HP/WA</span><span class="text-xs font-black text-white">${authUser.phone || '-'}</span></div>
+                    </div>
+                </div>`; 
+            }
+        }
+
+        function renderLogs() { 
+            const c = document.getElementById('log-container'); 
+            const my = dbLogs.filter(l => l.nama === authUser.nama).reverse(); 
+            c.innerHTML = my.map(l => {
+                let jamRapi = l.jam || '--:--';
+                if (String(jamRapi).includes('T')) { const dObj = new Date(jamRapi); jamRapi = dObj.getHours().toString().padStart(2,'0') + ":" + dObj.getMinutes().toString().padStart(2,'0'); }
+                return `
+                <div class="glass-card flex justify-between items-center border-l-4 ${l.status==='TEPAT WAKTU' || l.status==='HADIR' ? 'border-l-success' : l.status==='IZIN' ? 'border-l-blue-400' : 'border-l-danger'}">
+                    <div>
+                        <p class="font-bold text-[10px] text-white">${l.tanggal ? String(l.tanggal).substring(0,10) : ''}</p>
+                        <p class="text-[9px] opacity-50 text-white">${jamRapi}</p>
+                    </div>
+                    <div class="text-right flex flex-col items-end gap-2">
+                        <p class="text-[10px] font-black ${l.status==='TEPAT WAKTU' || l.status==='HADIR' ? 'text-success' : l.status==='IZIN' ? 'text-blue-400' : 'text-danger'}">${l.status}</p>
+                        <button onclick="hapusLog(${l.rowId})" class="text-red-400 opacity-50 hover:opacity-100 p-1 bg-white/5 rounded-lg"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                    </div>
+                </div>`;
+            }).join('') || '<p class="text-center opacity-30 text-xs py-10 uppercase font-bold">Belum Ada Riwayat Absen</p>'; 
+            setTimeout(() => lucide.createIcons(), 10);
+        }
+        
+        setInterval(() => { const now = new Date(); document.getElementById('clock').innerText = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0'); document.getElementById('date').innerText = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long'}); }, 1000);
+        
+        async function prosesLogin() {
+            const n = document.getElementById('l-name').value.trim().toUpperCase();
+            const p = document.getElementById('l-pin').value.trim();
+            const btn = document.getElementById('btn-login');
+            
+            if(!n || !p) { await showSysDialog({title: "PERHATIAN", msg: "Lengkapi data NAMA dan PIN!", type: "error", color: "var(--danger)"}); return; }
+            btn.innerText = "MENGECEK...";
+            
+            try {
+                const data = await requestData(`action=loginSiswa&nama=${encodeURIComponent(n)}&pin=${encodeURIComponent(p)}`); 
+                if(data.status === "success") { 
+                    if(data.user.status !== "ACTIVE") {
+                        await showSysDialog({title: "AKSES DITOLAK", msg: "Akun Anda belum disetujui (ACC).", type: "error", color: "var(--danger)"}); 
+                        btn.innerText = "MASUK"; 
+                    } else {
+                        localStorage.setItem('paskib_auth', JSON.stringify(data.user)); 
+                        location.reload();
+                    }
+                } else {
+                    await showSysDialog({title: "LOGIN GAGAL", msg: "Nama atau PIN salah / tidak ditemukan.", type: "error", color: "var(--danger)"}); 
+                    btn.innerText = "MASUK"; 
+                }
+            } catch(e) { 
+                await showSysDialog({title: "OFFLINE", msg: "Gagal terhubung ke server. Periksa koneksi internet.", type: "error", color: "var(--danger)"}); 
+                btn.innerText = "MASUK"; 
+            }
+        }
+
+        async function prosesRegister() {
+            const n = document.getElementById('r-name').value.trim().toUpperCase();
+            const e = document.getElementById('r-email').value.trim();
+            const r = document.getElementById('r-role').value;
+            const k = document.getElementById('r-kelas').value.trim().toUpperCase();
+            const a = document.getElementById('r-angkatan').value.trim();
+            const ph = document.getElementById('r-phone').value.trim();
+            const p = document.getElementById('r-pin').value.trim();
+
+            if(!n || !e || !r || !k || !a || !ph || !p) { 
+                await showSysDialog({title: "PERHATIAN", msg: "Isi seluruh kolom data dengan lengkap!", type: "error", color: "var(--danger)"}); 
+                return; 
+            }
+            
+            const isDuplicate = dbSiswa.some(siswa => siswa.nama.toUpperCase() === n || (siswa.email && siswa.email.toUpperCase() === e.toUpperCase()));
+            if (isDuplicate) {
+                await showSysDialog({title: "PENOLAKAN SISTEM", msg: "Nama atau Email ini sudah terdaftar! Gunakan data lain atau hubungi Pelatih.", type: "error", color: "var(--danger)"});
+                return;
+            }
+
+            document.getElementById('btn-reg').innerText = "MENGIRIM...";
+            const params = `action=registerUser&nama=${encodeURIComponent(n)}&email=${encodeURIComponent(e)}&pin=${encodeURIComponent(p)}&role=${encodeURIComponent(r)}&kelas=${encodeURIComponent(k)}&angkatan=${encodeURIComponent(a)}&phone=${encodeURIComponent(ph)}`;
+            
+            try {
+                await requestData(params);
+                await showSysDialog({title: "DAFTAR BERHASIL", msg: "Silakan tunggu ACC sebelum melakukan Login.", type: "success", color: "var(--success)"});
+                location.reload();
+            } catch(err) {
+                await showSysDialog({title: "GAGAL", msg: "Server sibuk, coba lagi nanti.", type: "error", color: "var(--danger)"});
+                document.getElementById('btn-reg').innerText = "Ajukan";
+            }
+        }
+
+        setTimeout(() => {
+            const splash = document.getElementById('splash');
+            if(splash) {
+                splash.style.opacity = '0';
+                setTimeout(() => splash.remove(), 500);
+            }
+        }, 1500);
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if(authUser) {
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('main-app').classList.remove('hidden');
+                document.getElementById('user-head').innerText = authUser.nama;
+            }
+            syncData();
+        });
+    </script>
+</body>
+</html>
