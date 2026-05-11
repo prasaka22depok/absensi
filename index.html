@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRASAKA | ABSEN ANGGOTA</title>
+    <title>PRASAKA | LOGIN ANGGOTA</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -115,9 +115,8 @@
     <!-- LOGIN SCREEN -->
     <div id="auth-screen">
         <div class="auth-card">
-            <!-- Ganti URL src di bawah ini dengan link logo asli PRASAKA -->
             <img src="https://files.catbox.moe/e1jb6d.png" alt="Logo PRASAKA" style="width: 80px; height: 80px; object-fit: contain; border-radius: 20px; margin: 0 auto 20px; box-shadow: var(--shadow); border: 2px solid var(--primary-light); display: block;">
-            <h2 class="auth-title">LOGIN ANGGOTA</h2>
+            <h2 class="auth-title">LOGIN SISWA</h2>
             
             <!-- FORM LOGIN -->
             <div id="login-form">
@@ -131,10 +130,11 @@
             <!-- FORM REGISTER -->
             <div id="reg-form" style="display: none;">
                 <p class="auth-subtitle">Daftar untuk membuat akun PRASAKA.</p>
-                <input type="text" id="r-nama" class="auth-input" placeholder="NAMA LENGKAP" style="text-transform: uppercase;">
-                <input type="number" id="r-angkatan" class="auth-input" placeholder="ANGKATAN">
-                <input type="tel" id="r-phone" class="auth-input" placeholder="NO. WHATSAPP (628...)">
-                <input type="password" id="r-pin" class="auth-input" placeholder="BUAT PIN">
+                <input type="text" id="r-nama" class="auth-input" placeholder="NAMA (SESUAI ABSEN)" style="text-transform: uppercase;">
+                <input type="email" id="r-email" class="auth-input" placeholder="EMAIL AKTIF (CONTOH@GMAIL.COM)">
+                <input type="number" id="r-angkatan" class="auth-input" placeholder="ANGKATAN (MISAL: 22)">
+                <input type="tel" id="r-phone" class="auth-input" placeholder="NO. WHATSAPP (08...)">
+                <input type="password" id="r-pin" class="auth-input" placeholder="BUAT PIN RAHASIA">
                 <button onclick="prosesRegister()" class="auth-btn" style="background: var(--success); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);">BUAT AKUN</button>
                 <button onclick="toggleAuthUser()" class="auth-switch">KEMBALI KE LOGIN</button>
             </div>
@@ -148,7 +148,6 @@
         <div id="sidebar">
             <!-- LOGO DI SIDEBAR -->
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
-                <!-- Link logo sudah diperbaiki pakai logo asli -->
                 <img src="https://files.catbox.moe/e1jb6d.png" alt="Logo PRASAKA" style="width: 70px; height: 70px; object-fit: contain; border-radius: 20px; margin-bottom: 12px; box-shadow: var(--shadow); border: 2px solid var(--primary-light); display: block; background: var(--surface);">
                 <h2 style="font-size: 16px; font-weight: 900; color: var(--text-main); letter-spacing: 1px; text-transform: uppercase;">PRASAKA</h2>
             </div>
@@ -174,7 +173,6 @@
         <header>
             <button class="btn-menu" onclick="toggleSidebar()"><i data-lucide="menu"></i></button>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <!-- Link logo sudah diperbaiki pakai logo asli -->
                 <img src="https://files.catbox.moe/e1jb6d.png" alt="Logo" style="width: 30px; height: 30px; border-radius: 8px; object-fit: contain; border: 1px solid var(--border); display: block; background: var(--surface);">
                 <div class="header-title">PRASAKA</div>
             </div>
@@ -431,18 +429,34 @@
 
         async function prosesRegister() {
             const nama = document.getElementById('r-nama').value.trim().toUpperCase();
+            const email = document.getElementById('r-email').value.trim();
             const angkatan = document.getElementById('r-angkatan').value.trim();
             const phone = document.getElementById('r-phone').value.trim();
             const pin = document.getElementById('r-pin').value.trim();
 
-            if(!nama || !angkatan || !phone || !pin) {
+            if(!nama || !email || !angkatan || !phone || !pin) {
                 return showSysDialog({title:"PERHATIAN", msg:"Semua kolom pendaftaran wajib diisi!", type:"error", color:"var(--warning)"});
             }
 
             showLoading(true);
             try {
+                // VALIDASI DATA GANDA KE GOOGLE SHEETS
+                const cekData = await requestData(`auth=true`);
+                if (cekData.status === "success") {
+                    const isExist = cekData.siswa.some(s => s.nama.toUpperCase() === nama);
+                    if (isExist) {
+                        showLoading(false);
+                        return showSysDialog({
+                            title: "DITOLAK", 
+                            msg: "Nama kamu sudah terdaftar di sistem! Jika lupa PIN atau akun belum di-ACC, silakan langsung hubungi Admin.", 
+                            type: "error", 
+                            color: "var(--danger)"
+                        });
+                    }
+                }
+
                 // Memanggil function Apps Script untuk tambah siswa
-                const params = `action=registerSiswa&nama=${encodeURIComponent(nama)}&angkatan=${encodeURIComponent(angkatan)}&phone=${encodeURIComponent(phone)}&pin=${encodeURIComponent(pin)}&role=ANGGOTA`;
+                const params = `action=registerSiswa&nama=${encodeURIComponent(nama)}&email=${encodeURIComponent(email)}&angkatan=${encodeURIComponent(angkatan)}&phone=${encodeURIComponent(phone)}&pin=${encodeURIComponent(pin)}&role=ANGGOTA`;
                 const res = await requestData(params);
                 showLoading(false);
                 
@@ -451,6 +465,7 @@
                     toggleAuthUser(); // Balik otomatis ke tab Login
                     
                     document.getElementById('r-nama').value = "";
+                    document.getElementById('r-email').value = "";
                     document.getElementById('r-angkatan').value = "";
                     document.getElementById('r-phone').value = "";
                     document.getElementById('r-pin').value = "";
@@ -797,11 +812,28 @@
         }
 
         // --- INIT ---
-        window.onload = () => { 
+        window.onload = async () => { 
             lucide.createIcons();
             const s = localStorage.getItem('siswa_auth'); 
             if(s) { 
-                masukSistem(JSON.parse(s)); 
+                const authData = JSON.parse(s);
+                showLoading(true);
+                
+                try {
+                    // VALIDASI ULANG KE EXCEL
+                    const data = await requestData(`action=loginSiswa&nama=${encodeURIComponent(authData.nama)}&pin=${encodeURIComponent(authData.pin)}`);
+                    showLoading(false);
+                    
+                    if(data.status === "success" && data.user.status === "ACTIVE") {
+                        masukSistem(data.user); 
+                    } else {
+                        throw new Error("Sesi tidak valid");
+                    }
+                } catch(e) {
+                    showLoading(false);
+                    localStorage.removeItem('siswa_auth');
+                    showSysDialog({title:"SESI HABIS", msg:"Akun kamu tidak ditemukan di database atau sudah dihapus/dinonaktifkan Admin.", type:"error", color:"var(--danger)"});
+                }
             }
         };
     </script>
