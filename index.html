@@ -37,6 +37,8 @@
         .auth-input:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px var(--primary-light); }
         .auth-btn { width: 100%; padding: 18px; background: var(--primary-grad); border-radius: 16px; font-weight: 900; color: white; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25); }
         .auth-btn:active { transform: scale(0.97); }
+        .auth-switch { font-size: 11px; color: var(--text-muted); margin-top: 15px; cursor: pointer; font-weight: 800; text-decoration: underline; background: none; border: none; text-transform: uppercase; transition: 0.2s; }
+        .auth-switch:hover { color: var(--primary); }
 
         /* MAIN CONTENT & SIDEBAR */
         #main-content { display: none; }
@@ -113,14 +115,29 @@
     <!-- LOGIN SCREEN -->
     <div id="auth-screen">
         <div class="auth-card">
-            <div class="auth-logo"><i data-lucide="shield-check" style="width: 35px; height: 35px;"></i></div>
+            <!-- Ganti URL src di bawah ini dengan link logo asli PRASAKA -->
+            <img src="https://files.catbox.moe/e1jb6d.png" alt="Logo PRASAKA" style="width: 80px; height: 80px; object-fit: contain; border-radius: 20px; margin: 0 auto 20px; box-shadow: var(--shadow); border: 2px solid var(--primary-light); display: block;">
             <h2 class="auth-title">PORTAL SISWA</h2>
-            <p class="auth-subtitle">Masukkan Nama dan PIN untuk absen.</p>
             
-            <input type="text" id="l-nama" class="auth-input" placeholder="NAMA LENGKAP" style="text-transform: uppercase;">
-            <input type="password" id="l-pin" class="auth-input" placeholder="PIN RAHASIA">
-            
-            <button onclick="prosesLogin()" class="auth-btn">MASUK SISTEM</button>
+            <!-- FORM LOGIN -->
+            <div id="login-form">
+                <p class="auth-subtitle">Masukkan Nama dan PIN untuk absen.</p>
+                <input type="text" id="l-nama" class="auth-input" placeholder="NAMA LENGKAP" style="text-transform: uppercase;">
+                <input type="password" id="l-pin" class="auth-input" placeholder="PIN RAHASIA">
+                <button onclick="prosesLogin()" class="auth-btn">MASUK SISTEM</button>
+                <button onclick="toggleAuthUser()" class="auth-switch">DAFTAR ANGGOTA BARU</button>
+            </div>
+
+            <!-- FORM REGISTER -->
+            <div id="reg-form" style="display: none;">
+                <p class="auth-subtitle">Daftar untuk membuat akun PRASAKA.</p>
+                <input type="text" id="r-nama" class="auth-input" placeholder="NAMA (SESUAI ABSEN)" style="text-transform: uppercase;">
+                <input type="number" id="r-angkatan" class="auth-input" placeholder="ANGKATAN (MISAL: 22)">
+                <input type="tel" id="r-phone" class="auth-input" placeholder="NO. WHATSAPP (08...)">
+                <input type="password" id="r-pin" class="auth-input" placeholder="BUAT PIN RAHASIA">
+                <button onclick="prosesRegister()" class="auth-btn" style="background: var(--success); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);">BUAT AKUN</button>
+                <button onclick="toggleAuthUser()" class="auth-switch">KEMBALI KE LOGIN</button>
+            </div>
         </div>
     </div>
 
@@ -129,6 +146,13 @@
         <!-- SIDEBAR -->
         <div id="overlay" onclick="toggleSidebar()"></div>
         <div id="sidebar">
+            <!-- LOGO DI SIDEBAR -->
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+                <!-- Link logo sudah diperbaiki pakai logo asli -->
+                <img src="https://files.catbox.moe/e1jb6d.png" alt="Logo PRASAKA" style="width: 70px; height: 70px; object-fit: contain; border-radius: 20px; margin-bottom: 12px; box-shadow: var(--shadow); border: 2px solid var(--primary-light); display: block; background: var(--surface);">
+                <h2 style="font-size: 16px; font-weight: 900; color: var(--text-main); letter-spacing: 1px; text-transform: uppercase;">PRASAKA</h2>
+            </div>
+
             <div class="sb-user">
                 <div class="sb-avatar" id="sb-initial">S</div>
                 <div>
@@ -149,7 +173,11 @@
         <!-- HEADER -->
         <header>
             <button class="btn-menu" onclick="toggleSidebar()"><i data-lucide="menu"></i></button>
-            <div class="header-title">PRASAKA</div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <!-- Link logo sudah diperbaiki pakai logo asli -->
+                <img src="https://files.catbox.moe/e1jb6d.png" alt="Logo" style="width: 30px; height: 30px; border-radius: 8px; object-fit: contain; border: 1px solid var(--border); display: block; background: var(--surface);">
+                <div class="header-title">PRASAKA</div>
+            </div>
             <button class="btn-menu" onclick="lihatPengumuman()" style="position: relative;">
                 <i data-lucide="bell"></i>
                 <span id="bell-dot" style="display:none; position:absolute; top:8px; right:8px; width:10px; height:10px; background:var(--danger); border-radius:50%; border:2px solid var(--surface);"></span>
@@ -243,6 +271,23 @@
 
             <!-- 3. RIWAYAT SAYA -->
             <div id="p-riwayat" class="page">
+                
+                <!-- Statistik Absen Pribadi -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                    <div class="stat-box" style="padding: 15px 10px;">
+                        <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); margin-bottom: 5px;">HADIR</div>
+                        <div id="my-stat-hadir" style="font-size: 20px; font-weight: 900; color: var(--success);">0</div>
+                    </div>
+                    <div class="stat-box" style="padding: 15px 10px;">
+                        <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); margin-bottom: 5px;">IZIN</div>
+                        <div id="my-stat-izin" style="font-size: 20px; font-weight: 900; color: var(--primary);">0</div>
+                    </div>
+                    <div class="stat-box" style="padding: 15px 10px;">
+                        <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); margin-bottom: 5px;">TELAT</div>
+                        <div id="my-stat-telat" style="font-size: 20px; font-weight: 900; color: var(--danger);">0</div>
+                    </div>
+                </div>
+
                 <div class="card" style="padding: 0; overflow: hidden;">
                     <div class="card-header" style="padding: 20px 20px 0;"><i data-lucide="history"></i> Riwayat Absen Kamu</div>
                     <div id="list-riwayat" style="padding: 0 20px 20px;">
@@ -372,6 +417,52 @@
             }
         }
 
+        function toggleAuthUser() { 
+            const lf = document.getElementById('login-form');
+            const rf = document.getElementById('reg-form');
+            if(lf.style.display === 'none') {
+                lf.style.display = 'block';
+                rf.style.display = 'none';
+            } else {
+                lf.style.display = 'none';
+                rf.style.display = 'block';
+            }
+        }
+
+        async function prosesRegister() {
+            const nama = document.getElementById('r-nama').value.trim().toUpperCase();
+            const angkatan = document.getElementById('r-angkatan').value.trim();
+            const phone = document.getElementById('r-phone').value.trim();
+            const pin = document.getElementById('r-pin').value.trim();
+
+            if(!nama || !angkatan || !phone || !pin) {
+                return showSysDialog({title:"PERHATIAN", msg:"Semua kolom pendaftaran wajib diisi!", type:"error", color:"var(--warning)"});
+            }
+
+            showLoading(true);
+            try {
+                // Memanggil function Apps Script untuk tambah siswa
+                const params = `action=registerSiswa&nama=${encodeURIComponent(nama)}&angkatan=${encodeURIComponent(angkatan)}&phone=${encodeURIComponent(phone)}&pin=${encodeURIComponent(pin)}&role=ANGGOTA`;
+                const res = await requestData(params);
+                showLoading(false);
+                
+                if(res.status === "success") {
+                    await showSysDialog({title:"BERHASIL DAFTAR", msg:"Akun berhasil dibuat! Silakan minta Admin untuk ACC akun kamu agar bisa login.", type:"success", color:"var(--success)"});
+                    toggleAuthUser(); // Balik otomatis ke tab Login
+                    
+                    document.getElementById('r-nama').value = "";
+                    document.getElementById('r-angkatan').value = "";
+                    document.getElementById('r-phone').value = "";
+                    document.getElementById('r-pin').value = "";
+                } else {
+                    showSysDialog({title:"GAGAL", msg:res.msg, type:"error", color:"var(--danger)"});
+                }
+            } catch(e) {
+                showLoading(false);
+                showSysDialog({title:"KONEKSI PUTUS", msg:"Gagal mengirim data pendaftaran ke server.", type:"error", color:"var(--danger)"});
+            }
+        }
+
         // --- LOGIN LOGIC ---
         async function prosesLogin() {
             const nama = document.getElementById('l-nama').value.trim().toUpperCase();
@@ -478,6 +569,23 @@
         function renderRiwayat(logs) {
             // Filter log khusus nama user yang login
             const myLogs = logs.filter(l => l.nama.toUpperCase() === userData.nama.toUpperCase()).reverse();
+            
+            // --- Kalkulasi Statistik ---
+            let hadir = 0;
+            let izin = 0;
+            let telat = 0;
+
+            myLogs.forEach(l => {
+                if (l.status === 'HADIR' || l.status === 'TEPAT WAKTU') hadir++;
+                else if (l.status === 'IZIN') izin++;
+                else if (l.status === 'TERLAMBAT') telat++;
+            });
+
+            document.getElementById('my-stat-hadir').innerText = hadir;
+            document.getElementById('my-stat-izin').innerText = izin;
+            document.getElementById('my-stat-telat').innerText = telat;
+            // ---------------------------
+
             const container = document.getElementById('list-riwayat');
             
             if(myLogs.length === 0) {
