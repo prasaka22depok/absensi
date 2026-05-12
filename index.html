@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRASAKA | LOGIN ANGGOTA</title>
+    <title>PRASAKA | PORTAL ANGGOTA</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -116,7 +116,7 @@
     <div id="auth-screen">
         <div class="auth-card">
             <img src="https://files.catbox.moe/e1jb6d.png" alt="Logo PRASAKA" style="width: 80px; height: 80px; object-fit: contain; border-radius: 20px; margin: 0 auto 20px; box-shadow: var(--shadow); border: 2px solid var(--primary-light); display: block;">
-            <h2 class="auth-title">LOGIN SISWA</h2>
+            <h2 class="auth-title">LOGIN ANGGOTA</h2>
             
             <!-- FORM LOGIN -->
             <div id="login-form">
@@ -132,8 +132,8 @@
                 <p class="auth-subtitle">Daftar untuk membuat akun PRASAKA.</p>
                 <input type="text" id="r-nama" class="auth-input" placeholder="NAMA (SESUAI ABSEN)" style="text-transform: uppercase;">
                 <input type="email" id="r-email" class="auth-input" placeholder="EMAIL AKTIF (CONTOH@GMAIL.COM)">
-                <input type="number" id="r-angkatan" class="auth-input" placeholder="ANGKATAN (MISAL: 22)">
-                <input type="tel" id="r-phone" class="auth-input" placeholder="NO. WHATSAPP (08...)">
+                <input type="number" id="r-angkatan" class="auth-input" placeholder="ANGKATAN">
+                <input type="tel" id="r-phone" class="auth-input" placeholder="NO. WHATSAPP (628...)">
                 <input type="password" id="r-pin" class="auth-input" placeholder="BUAT PIN RAHASIA">
                 <button onclick="prosesRegister()" class="auth-btn" style="background: var(--success); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);">BUAT AKUN</button>
                 <button onclick="toggleAuthUser()" class="auth-switch">KEMBALI KE LOGIN</button>
@@ -322,7 +322,6 @@
     </div>
 
     <script>
-        // GANTI LINK INI DENGAN LINK WEB APP LU YANG BARU
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxieMyuN0q4QbCHIQAYj4gMKj1U-AlF2NM1Elbvs11MITj5Wrgdafblkd-YkqDFFeUJ/exec"; 
 
         let userData = null;
