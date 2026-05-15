@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRASAKA | ABSEN ANGGOTA</title>
+    <title>PRASAKA | ABSENSI ANGGOTA</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -22,6 +22,16 @@
             --danger: #ef4444;
             --warning: #f59e0b;
             --shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.1);
+        }
+
+        body.dark-theme {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-light: rgba(37, 99, 235, 0.15);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -43,12 +53,12 @@
         /* MAIN CONTENT & SIDEBAR */
         #main-content { display: none; }
         #overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 99; display: none; }
-        #sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 280px; background: var(--surface); border-right: 1px solid var(--border); z-index: 100; transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 30px 20px; display: flex; flex-direction: column; box-shadow: 20px 0 40px rgba(0,0,0,0.03); }
+        #sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 280px; background: var(--surface); border-right: 1px solid var(--border); z-index: 100; transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 30px 20px; display: flex; flex-direction: column; box-shadow: 20px 0 40px rgba(0,0,0,0.03); overflow-y: auto; }
         #sidebar.open { transform: translateX(0); }
         
         .sb-user { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-        .sb-avatar { width: 45px; height: 45px; background: var(--primary-grad); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 18px; }
-        .sb-link { display: flex; align-items: center; gap: 15px; padding: 16px; border-radius: 16px; font-size: 12px; font-weight: 800; color: var(--text-muted); cursor: pointer; border: none; background: transparent; transition: 0.2s; text-decoration: none; margin-bottom: 8px; }
+        .sb-avatar { width: 45px; height: 45px; background: var(--primary-grad); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 18px; flex-shrink: 0; }
+        .sb-link { display: flex; align-items: center; gap: 15px; padding: 16px; border-radius: 16px; font-size: 12px; font-weight: 800; color: var(--text-muted); cursor: pointer; border: none; background: transparent; transition: 0.2s; text-decoration: none; margin-bottom: 8px; flex-shrink: 0; }
         .sb-link:hover, .sb-link.active-menu { background: var(--primary-light); color: var(--primary); }
         .sb-link.active-menu i { color: var(--primary); }
         .btn-logout { color: var(--danger); margin-top: auto; background: #fef2f2; }
@@ -92,6 +102,12 @@
 
         /* SCANNER BOX */
         #reader { width: 100%; border-radius: 20px; overflow: hidden; border: 2px solid var(--primary-light); display: none; margin-bottom: 20px; }
+
+        /* CUSTOMER SERVICE FAB */
+        #cs-btn { position: fixed; bottom: 30px; right: 30px; background: var(--primary-grad); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4); cursor: pointer; z-index: 1000; border: none; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        #cs-btn:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 15px 35px rgba(37, 99, 235, 0.5); }
+        #cs-btn i { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -130,9 +146,12 @@
             <!-- FORM REGISTER -->
             <div id="reg-form" style="display: none;">
                 <p class="auth-subtitle">Daftar untuk membuat akun PRASAKA.</p>
-                <input type="text" id="r-nama" class="auth-input" placeholder="NAMA (SESUAI ABSEN)" style="text-transform: uppercase;">
+                <input type="text" id="r-nama" class="auth-input" placeholder="NAMA LENGKAP" style="text-transform: uppercase;">
                 <input type="email" id="r-email" class="auth-input" placeholder="EMAIL AKTIF (CONTOH@GMAIL.COM)">
-                <input type="number" id="r-angkatan" class="auth-input" placeholder="ANGKATAN">
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="r-kelas" class="auth-input" placeholder="KELAS" style="flex:1;">
+                    <input type="number" id="r-angkatan" class="auth-input" placeholder="ANGKATAN" style="flex:1;">
+                </div>
                 <input type="tel" id="r-phone" class="auth-input" placeholder="NO. WHATSAPP (628...)">
                 <input type="password" id="r-pin" class="auth-input" placeholder="BUAT PIN RAHASIA">
                 <button onclick="prosesRegister()" class="auth-btn" style="background: var(--success); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);">BUAT AKUN</button>
@@ -146,27 +165,30 @@
         <!-- SIDEBAR -->
         <div id="overlay" onclick="toggleSidebar()"></div>
         <div id="sidebar">
-            <!-- LOGO DI SIDEBAR -->
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;">
                 <img src="https://files.catbox.moe/e1jb6d.png" alt="Logo PRASAKA" style="width: 70px; height: 70px; object-fit: contain; border-radius: 20px; margin-bottom: 12px; box-shadow: var(--shadow); border: 2px solid var(--primary-light); display: block; background: var(--surface);">
                 <h2 style="font-size: 16px; font-weight: 900; color: var(--text-main); letter-spacing: 1px; text-transform: uppercase;">PRASAKA</h2>
             </div>
 
-            <div class="sb-user">
+            <div class="sb-user" style="flex-shrink: 0;">
                 <div class="sb-avatar" id="sb-initial">S</div>
                 <div>
                     <h1 id="sb-nama" style="font-size:14px; font-weight:900; color:var(--text-main);">SISWA</h1>
                     <p id="sb-role" style="font-size:10px; font-weight:700; color:var(--primary);">ANGGOTA</p>
+                    <p id="sb-poin" style="font-size:11px; font-weight:800; color:#d97706; margin-top:3px; display:flex; align-items:center; gap:4px;"><i data-lucide="star" style="width:12px;"></i> <span id="txt-sb-poin">0</span> PTS</p>
                 </div>
             </div>
-            <div style="display: flex; flex-direction: column; flex: 1;">
+            
+            <div style="display: flex; flex-direction: column; flex: 1; overflow-y: auto; padding-right: 5px; margin-bottom: 15px;">
                 <button onclick="sw('p-beranda', this)" class="sb-link active-menu"><i data-lucide="layout-dashboard"></i> Beranda</button>
                 <button onclick="sw('p-absen', this)" class="sb-link"><i data-lucide="scan-line"></i> Halaman Absen</button>
                 <button onclick="sw('p-izin', this)" class="sb-link"><i data-lucide="clipboard-edit"></i> Form Izin</button>
                 <button onclick="sw('p-riwayat', this)" class="sb-link"><i data-lucide="history"></i> Riwayat Saya</button>
+                <button onclick="sw('p-peringkat', this)" class="sb-link"><i data-lucide="trophy"></i> Papan Peringkat</button>
                 <button onclick="sw('p-prof', this)" class="sb-link"><i data-lucide="user"></i> Profil Saya</button>
             </div>
-            <button onclick="logoutSiswa()" class="sb-link btn-logout"><i data-lucide="log-out"></i> Keluar Akun</button>
+            
+            <button onclick="logoutSiswa()" class="sb-link btn-logout" style="flex-shrink: 0;"><i data-lucide="log-out"></i> Keluar Akun</button>
         </div>
 
         <!-- HEADER -->
@@ -187,7 +209,6 @@
             <!-- 1. BERANDA (SIMPEL) -->
             <div id="p-beranda" class="page active">
                 
-                <!-- Pengumuman Marquee (Bila ada) -->
                 <div id="marquee-container" style="display:none; background: var(--primary-light); color: var(--primary); padding: 12px 15px; border-radius: 16px; margin-bottom: 20px; font-size: 11px; font-weight: 700; align-items: center; gap: 10px; border: 1px solid #dbeafe;">
                     <i data-lucide="megaphone" style="width: 18px; flex-shrink: 0;"></i>
                     <marquee id="marquee-text" scrollamount="5" style="flex: 1;"></marquee>
@@ -243,7 +264,7 @@
                 </div>
             </div>
 
-            <!-- FORM IZIN (NEW) -->
+            <!-- 3. FORM IZIN -->
             <div id="p-izin" class="page">
                 <div class="card">
                     <div class="card-header"><i data-lucide="clipboard-edit"></i> Formulir Izin Latihan</div>
@@ -267,10 +288,8 @@
                 </div>
             </div>
 
-            <!-- 3. RIWAYAT SAYA -->
+            <!-- 4. RIWAYAT SAYA -->
             <div id="p-riwayat" class="page">
-                
-                <!-- Statistik Absen Pribadi -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                     <div class="stat-box" style="padding: 15px 10px;">
                         <div style="font-size: 9px; font-weight: 800; color: var(--text-muted); margin-bottom: 5px;">HADIR</div>
@@ -294,7 +313,24 @@
                 </div>
             </div>
 
-            <!-- 4. PROFIL SAYA -->
+            <!-- 5. HALAMAN LEADERBOARD -->
+            <div id="p-peringkat" class="page">
+                <div class="card" style="padding: 25px 20px;">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <div style="width: 60px; height: 60px; background: #fef3c7; border: 2px solid #fde68a; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; box-shadow: var(--shadow);">
+                            <i data-lucide="trophy" style="width: 30px; height: 30px; color: #d97706;"></i>
+                        </div>
+                        <h2 style="font-size: 16px; font-weight: 900; color: var(--text-main); margin-bottom: 5px;">KLASEMEN KEDISIPLINAN</h2>
+                        <p style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Peringkat Poin Tertinggi PRASAKA</p>
+                    </div>
+
+                    <div id="list-peringkat-user">
+                        <!-- Data Peringkat Digenerate JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. PROFIL SAYA -->
             <div id="p-prof" class="page">
                 <div class="card" style="text-align: center; padding: 40px 20px;">
                     <div class="auth-logo" id="prof-avatar" style="width: 90px; height: 90px; font-size: 36px; margin-bottom: 15px; background: var(--primary-grad); color: white; border-radius: 30px;">A</div>
@@ -302,6 +338,13 @@
                     <p id="prof-role" style="font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 25px;">-</p>
 
                     <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 20px; text-align: left; margin-bottom: 10px;">
+                        
+                        <!-- TAMBAHAN: Menampilkan Poin di Profil -->
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px; align-items: center;">
+                            <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px;"><i data-lucide="star" style="width: 14px;"></i> Total Poin</span>
+                            <span id="prof-poin" style="font-size: 12px; font-weight: 900; color: #d97706;">0 PTS</span>
+                        </div>
+                        
                         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px; align-items: center;">
                             <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px;"><i data-lucide="shield-check" style="width: 14px;"></i> Status Akun</span>
                             <span id="prof-status" class="status-badge badge-online" style="font-size: 9px; padding: 4px 8px;">-</span>
@@ -315,19 +358,32 @@
                             <span id="prof-phone" style="font-size: 12px; font-weight: 800; color: var(--text-main);">-</span>
                         </div>
                     </div>
+                    
+                    <button onclick="toggleTheme()" class="auth-btn" style="background:var(--bg); color:var(--text-main); border:1px solid var(--border); margin-bottom:15px; margin-top:20px; box-shadow:none; display:flex; justify-content:center; align-items:center; gap:8px;">
+                        <i data-lucide="moon" id="theme-icon" style="width: 18px;"></i>
+                        <span id="theme-text">GANTI MODE GELAP</span>
+                    </button>
+
+                    <button onclick="logoutSiswa()" class="auth-btn" style="background:var(--danger); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25);">KELUAR AKUN</button>
                 </div>
             </div>
-
         </main>
+
+        <!-- TOMBOL CUSTOMER SERVICE -->
+        <button id="cs-btn" onclick="hubungiCS()" title="Butuh Bantuan?">
+            <i data-lucide="headphones" style="width: 28px; height: 28px;"></i>
+        </button>
     </div>
 
     <script>
+        // GANTI LINK INI SESUAI SCRIPT GOOGLE AKANG
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxieMyuN0q4QbCHIQAYj4gMKj1U-AlF2NM1Elbvs11MITj5Wrgdafblkd-YkqDFFeUJ/exec"; 
 
         let userData = null;
         let sysConfig = null;
         let html5QrcodeScanner = null;
         let isDalamRadius = false;
+        let sudahAbsenHariIni = false; // VARIABEL PENGUNCI ABSEN
 
         function requestData(params) {
             return new Promise(async (resolve, reject) => {
@@ -389,6 +445,11 @@
             }
             document.getElementById('sidebar').classList.remove('open');
             document.getElementById('overlay').style.display = 'none';
+
+            // Auto-refresh config saat pindah menu
+            if (userData) {
+                tarikDataDashboard(); 
+            }
         }
 
         function logoutSiswa() { 
@@ -429,42 +490,28 @@
         async function prosesRegister() {
             const nama = document.getElementById('r-nama').value.trim().toUpperCase();
             const email = document.getElementById('r-email').value.trim();
+            const kelas = document.getElementById('r-kelas').value.trim();
             const angkatan = document.getElementById('r-angkatan').value.trim();
             const phone = document.getElementById('r-phone').value.trim();
             const pin = document.getElementById('r-pin').value.trim();
 
-            if(!nama || !email || !angkatan || !phone || !pin) {
+            if(!nama || !email || !kelas || !angkatan || !phone || !pin) {
                 return showSysDialog({title:"PERHATIAN", msg:"Semua kolom pendaftaran wajib diisi!", type:"error", color:"var(--warning)"});
             }
 
             showLoading(true);
             try {
-                // VALIDASI DATA GANDA KE GOOGLE SHEETS
-                const cekData = await requestData(`auth=true`);
-                if (cekData.status === "success") {
-                    const isExist = cekData.siswa.some(s => s.nama.toUpperCase() === nama);
-                    if (isExist) {
-                        showLoading(false);
-                        return showSysDialog({
-                            title: "DITOLAK", 
-                            msg: "Nama kamu sudah terdaftar di sistem! Jika lupa PIN atau akun belum di-ACC, silakan langsung hubungi Admin.", 
-                            type: "error", 
-                            color: "var(--danger)"
-                        });
-                    }
-                }
-
-                // Memanggil function Apps Script untuk tambah siswa
-                const params = `action=registerSiswa&nama=${encodeURIComponent(nama)}&email=${encodeURIComponent(email)}&angkatan=${encodeURIComponent(angkatan)}&phone=${encodeURIComponent(phone)}&pin=${encodeURIComponent(pin)}&role=ANGGOTA`;
+                const params = `action=registerSiswa&nama=${encodeURIComponent(nama)}&email=${encodeURIComponent(email)}&kelas=${encodeURIComponent(kelas)}&angkatan=${encodeURIComponent(angkatan)}&phone=${encodeURIComponent(phone)}&pin=${encodeURIComponent(pin)}&role=ANGGOTA`;
                 const res = await requestData(params);
                 showLoading(false);
                 
                 if(res.status === "success") {
                     await showSysDialog({title:"BERHASIL DAFTAR", msg:"Akun berhasil dibuat! Silakan minta Admin untuk ACC akun kamu agar bisa login.", type:"success", color:"var(--success)"});
-                    toggleAuthUser(); // Balik otomatis ke tab Login
+                    toggleAuthUser(); 
                     
                     document.getElementById('r-nama').value = "";
                     document.getElementById('r-email').value = "";
+                    document.getElementById('r-kelas').value = "";
                     document.getElementById('r-angkatan').value = "";
                     document.getElementById('r-phone').value = "";
                     document.getElementById('r-pin').value = "";
@@ -477,7 +524,6 @@
             }
         }
 
-        // --- LOGIN LOGIC ---
         async function prosesLogin() {
             const nama = document.getElementById('l-nama').value.trim().toUpperCase();
             const pin = document.getElementById('l-pin').value.trim();
@@ -506,85 +552,201 @@
 
         function masukSistem(user) {
             userData = user;
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('main-content').style.display = 'block';
+            const authScreen = document.getElementById('auth-screen');
+            if(authScreen) authScreen.style.display = 'none';
             
-            document.getElementById('sb-nama').innerText = user.nama;
-            document.getElementById('sb-role').innerText = user.kelas || user.role;
-            document.getElementById('sb-initial').innerText = user.nama.charAt(0);
+            const mainContent = document.getElementById('main-content');
+            if(mainContent) mainContent.style.display = 'block';
+            
+            const setTxt = (id, text) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = text;
+            };
+
+            setTxt('sb-nama', user.nama || 'Siswa');
+            setTxt('sb-role', user.kelas || user.role || 'Anggota');
+            setTxt('sb-initial', (user.nama || 'S').charAt(0));
+            setTxt('txt-sb-poin', parseInt(user.poin) || 0);
             
             // Isi Data Profil
-            document.getElementById('prof-nama').innerText = user.nama;
-            document.getElementById('prof-role').innerText = user.role;
-            document.getElementById('prof-avatar').innerText = user.nama.charAt(0);
+            setTxt('prof-nama', user.nama || '-');
+            setTxt('prof-role', user.role || '-');
+            setTxt('prof-avatar', (user.nama || 'A').charAt(0));
+            setTxt('prof-poin', (parseInt(user.poin) || 0) + ' PTS');
+            setTxt('prof-kelas', `${user.kelas || '-'} / ${user.angkatan || '-'}`);
+            setTxt('prof-phone', user.phone || '-');
             
             let statClass = "badge-offline";
             if(user.status === "ACTIVE") statClass = "badge-online";
+            
             const profStat = document.getElementById('prof-status');
             if(profStat) {
-                profStat.innerText = user.status;
+                profStat.innerText = user.status || '-';
                 profStat.className = `status-badge ${statClass}`;
             }
-            
-            document.getElementById('prof-kelas').innerText = `${user.kelas || '-'} / ${user.angkatan || '-'}`;
-            document.getElementById('prof-phone').innerText = user.phone || '-';
             
             tarikDataDashboard();
         }
 
-        // --- FETCH DATA DASHBOARD ---
         async function tarikDataDashboard() {
             try {
                 const data = await requestData(`auth=true`);
                 if(data.status === "success") {
                     sysConfig = data.config;
                     
-                    // Update Jumlah Anggota Aktif
-                    const totalAktif = data.siswa.filter(s => s.status === 'ACTIVE').length;
-                    document.getElementById('txt-jml-anggota').innerText = totalAktif;
+                    const setTxt = (id, text) => {
+                        const el = document.getElementById(id);
+                        if (el) el.innerText = text;
+                    };
 
-                    // Update Status Beranda & Marquee
-                    if(sysConfig.marquee && sysConfig.marquee.trim() !== "") {
-                        document.getElementById('marquee-container').style.display = 'flex';
-                        document.getElementById('marquee-text').innerText = sysConfig.marquee;
-                    } else {
-                        document.getElementById('marquee-container').style.display = 'none';
+                    // ==========================================
+                    // PERBARUI DATA POIN LOKAL DARI DATA TERBARU
+                    // ==========================================
+                    if(userData && data.siswa) {
+                        const myFreshData = data.siswa.find(s => (s.nama||"").toUpperCase().trim() === (userData.nama||"").toUpperCase().trim());
+                        if(myFreshData) {
+                            userData.poin = parseInt(myFreshData.poin) || 0;
+                            localStorage.setItem('siswa_auth', JSON.stringify(userData)); // simpan update poin ke storage
+                            setTxt('txt-sb-poin', userData.poin);
+                            setTxt('prof-poin', userData.poin + ' PTS');
+                        }
                     }
 
-                    // Update Indikator Titik Merah (Lonceng)
-                    if(sysConfig.ann && sysConfig.ann.trim() !== "") {
-                        document.getElementById('bell-dot').style.display = 'block';
+                    const totalAktif = data.siswa.filter(s => s.status === 'ACTIVE').length;
+                    setTxt('txt-jml-anggota', totalAktif);
+
+                    if(sysConfig.marquee && String(sysConfig.marquee).trim() !== "") {
+                        const mqCont = document.getElementById('marquee-container');
+                        if (mqCont) mqCont.style.display = 'flex';
+                        setTxt('marquee-text', sysConfig.marquee);
                     } else {
-                        document.getElementById('bell-dot').style.display = 'none';
+                        const mqCont = document.getElementById('marquee-container');
+                        if (mqCont) mqCont.style.display = 'none';
+                    }
+
+                    if(sysConfig.ann && String(sysConfig.ann).trim() !== "") {
+                        const bDot = document.getElementById('bell-dot');
+                        if (bDot) bDot.style.display = 'block';
+                    } else {
+                        const bDot = document.getElementById('bell-dot');
+                        if (bDot) bDot.style.display = 'none';
                     }
 
                     const badge = document.getElementById('status-badge-container');
                     const txtStat = document.getElementById('txt-status-radar');
                     
-                    if(!sysConfig.time || sysConfig.time.trim() === "") {
-                        badge.className = "status-badge badge-offline";
-                        txtStat.innerText = "RADAR DITUTUP";
+                    if(!sysConfig.time || String(sysConfig.time).trim() === "") {
+                        if (badge) badge.className = "status-badge badge-offline";
+                        if (txtStat) txtStat.innerText = "RADAR DITUTUP";
                     } else {
-                        badge.className = "status-badge badge-online";
-                        txtStat.innerText = "RADAR AKTIF";
-                        
-                        // Cek Lokasi buat Absen
+                        if (badge) badge.className = "status-badge badge-online";
+                        if (txtStat) txtStat.innerText = "RADAR AKTIF";
                         cekLokasiGPS();
                     }
 
-                    // Render Riwayat
+                    // === FITUR KUNCI: CEK APAKAH SUDAH ABSEN HARI INI ===
+                    const hariIni = new Date().toLocaleDateString('id-ID').substring(0,10);
+                    const myNama = (userData.nama || "").toUpperCase().trim();
+                    const cekAbsenSaya = data.logs.filter(l => 
+                        (l.nama || "").toUpperCase().trim() === myNama && 
+                        String(l.tanggal).includes(hariIni)
+                    );
+
+                    const btnAbsen = document.querySelector('.btn-absen-huge');
+                    if(cekAbsenSaya.length > 0) {
+                        sudahAbsenHariIni = true;
+                        if(btnAbsen) {
+                            btnAbsen.innerHTML = '<i data-lucide="check-circle" style="width: 40px; height: 40px;"></i> SUDAH ABSEN HARI INI';
+                            btnAbsen.style.background = 'var(--success)';
+                            btnAbsen.style.opacity = '0.8';
+                            btnAbsen.style.cursor = 'not-allowed';
+                            btnAbsen.style.boxShadow = 'none';
+                            btnAbsen.onclick = (e) => {
+                                e.preventDefault();
+                                showSysDialog({title:"SUDAH ABSEN", msg:"Kamu sudah berhasil mencatat kehadiran hari ini. Sampai jumpa di latihan berikutnya!", type:"success", color:"var(--success)"});
+                            };
+                        }
+                    } else {
+                        sudahAbsenHariIni = false;
+                        if(btnAbsen) {
+                            btnAbsen.innerHTML = '<i data-lucide="fingerprint" style="width: 40px; height: 40px;"></i> MULAI ABSENSI SEKARANG';
+                            btnAbsen.style.background = 'var(--primary-grad)';
+                            btnAbsen.style.opacity = '1';
+                            btnAbsen.style.cursor = 'pointer';
+                            btnAbsen.style.boxShadow = '0 15px 30px rgba(37, 99, 235, 0.25)';
+                            btnAbsen.onclick = () => sw('p-absen', document.querySelectorAll('.sb-link')[1]);
+                        }
+                    }
+
                     renderRiwayat(data.logs);
+                    renderPeringkatUser(data);
+                    lucide.createIcons(); // Wajib agar ikon check-circle termuat
                 }
             } catch(e) {
                 console.log("Gagal tarik data awal", e);
             }
         }
 
+        function renderPeringkatUser(data) {
+            let leaderboard = data.siswa.filter(s => s.status === 'ACTIVE').map(s => {
+                let poinPermanen = parseInt(s.poin);
+                if(isNaN(poinPermanen)) poinPermanen = 0;
+
+                return {
+                    nama: s.nama,
+                    role: s.role,
+                    angkatan: s.angkatan,
+                    poin: poinPermanen // Poin murni dari database Data Siswa (bebas hapus log)
+                };
+            });
+
+            leaderboard.sort((a, b) => b.poin - a.poin);
+
+            const container = document.getElementById('list-peringkat-user');
+            if(!container) return;
+
+            if(leaderboard.length === 0) {
+                container.innerHTML = '<p style="text-align:center; font-size:11px; color:var(--text-muted);">Belum ada peringkat.</p>';
+                return;
+            }
+
+            container.innerHTML = leaderboard.map((s, idx) => {
+                let badge = ''; let bg = 'var(--bg)'; let border = 'var(--border)'; let isMe = '';
+                
+                if(s.nama.toUpperCase() === userData.nama.toUpperCase()) {
+                    isMe = '<span style="background:var(--primary); color:white; font-size:8px; padding:2px 6px; border-radius:6px; margin-left:6px;">SAYA</span>';
+                    bg = 'var(--primary-light)';
+                    border = '#bfdbfe';
+                }
+
+                if(idx === 0) { badge = '🥇'; bg = isMe ? bg : '#fef9c3'; border = isMe ? border : '#fde047'; }
+                else if(idx === 1) { badge = '🥈'; }
+                else if(idx === 2) { badge = '🥉'; }
+                else { badge = `<span style="font-weight:900; color:var(--text-muted); font-size:12px; width:20px; display:inline-block; text-align:center;">${idx+1}</span>`; }
+
+                return `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:14px; background:${bg}; border:1px solid ${border}; border-radius:16px; margin-bottom:10px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="font-size:20px;">${badge}</div>
+                        <div>
+                            <p style="font-size:12px; font-weight:900; color:var(--text-main); margin-bottom:2px; display:flex; align-items:center;">${s.nama} ${isMe}</p>
+                            <p style="font-size:9px; color:var(--text-muted); font-weight:800; text-transform:uppercase;">${s.role} | ANGKATAN ${s.angkatan || '-'}</p>
+                        </div>
+                    </div>
+                    <div style="background:var(--surface); border:1px solid ${border}; padding:6px 12px; border-radius:12px; display:flex; align-items:center; gap:4px; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
+                        <i data-lucide="star" style="width:12px; color:#d97706;"></i>
+                        <span style="font-size:12px; font-weight:900; color:#d97706;">${s.poin}</span>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
         function renderRiwayat(logs) {
-            // Filter log khusus nama user yang login
-            const myLogs = logs.filter(l => l.nama.toUpperCase() === userData.nama.toUpperCase()).reverse();
+            const myNama = (userData.nama || "").toUpperCase().trim();
+            const myLogs = logs.filter(l => (l.nama || "").toUpperCase().trim() === myNama).reverse();
             
-            // --- Kalkulasi Statistik ---
             let hadir = 0;
             let izin = 0;
             let telat = 0;
@@ -595,12 +757,17 @@
                 else if (l.status === 'TERLAMBAT') telat++;
             });
 
-            document.getElementById('my-stat-hadir').innerText = hadir;
-            document.getElementById('my-stat-izin').innerText = izin;
-            document.getElementById('my-stat-telat').innerText = telat;
-            // ---------------------------
+            const setTxt = (id, text) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = text;
+            };
+
+            setTxt('my-stat-hadir', hadir);
+            setTxt('my-stat-izin', izin);
+            setTxt('my-stat-telat', telat);
 
             const container = document.getElementById('list-riwayat');
+            if(!container) return;
             
             if(myLogs.length === 0) {
                 container.innerHTML = `<div style="text-align:center; padding: 30px 0; color:var(--text-muted); font-size:12px; font-weight:600;">Belum ada riwayat absen.</div>`;
@@ -609,12 +776,20 @@
 
             container.innerHTML = myLogs.map(l => {
                 let j = l.jam || '--:--';
-                if(String(j).includes('T')) { const d = new Date(j); j = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0'); }
+                if(String(j).includes('T')) { 
+                    j = String(j).split('T')[1].substring(0, 5); 
+                }
+                
                 let tgl = l.tanggal ? String(l.tanggal).substring(0,10) : '-';
                 
                 let color = "var(--danger)"; let bg = "#fef2f2";
                 if(l.status === 'HADIR' || l.status === 'TEPAT WAKTU') { color = "var(--success)"; bg = "#ecfdf5"; }
                 else if(l.status === 'IZIN') { color = "var(--primary)"; bg = "var(--primary-light)"; }
+
+                // PERBAIKAN: Menampilkan desain khusus jika poinnya minus
+                let pStr = String(l.poin || "0").replace(/[^0-9-]/g, '');
+                let pVal = parseInt(pStr);
+                let displayPoin = pVal > 0 ? `+${pVal}` : pVal; // tambah teks + jika positif
 
                 return `
                 <div class="log-item">
@@ -622,16 +797,17 @@
                         <p style="font-size: 13px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">${tgl} | ${j}</p>
                         <p style="font-size: 10px; color: var(--text-muted); font-weight: 600;">Ket: ${l.keterangan || 'Hadir via Radar'}</p>
                     </div>
-                    <div style="background: ${bg}; color: ${color}; padding: 6px 12px; border-radius: 10px; font-size: 10px; font-weight: 900;">
-                        ${l.status}
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                        <span style="background: ${bg}; color: ${color}; padding: 6px 12px; border-radius: 10px; font-size: 10px; font-weight: 900;">${l.status}</span>
+                        ${!isNaN(pVal) && pVal !== 0 ? `<span style="font-size:9px; font-weight:900; color:${pVal > 0 ? '#d97706' : 'var(--danger)'}; display:flex; align-items:center;"><i data-lucide="${pVal > 0 ? 'star' : 'trending-down'}" style="width:10px; margin-right:2px;"></i> ${displayPoin} PTS</span>` : ''}
                     </div>
                 </div>`;
             }).join('');
+            lucide.createIcons();
         }
 
-        // --- LOGIK LOKASI & QR ---
         function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // Radius bumi meter
+            const R = 6371e3; 
             const p1 = lat1 * Math.PI/180;
             const p2 = lat2 * Math.PI/180;
             const dp = (lat2-lat1) * Math.PI/180;
@@ -646,10 +822,9 @@
             const locDist = document.getElementById('loc-distance');
             
             if(!sysConfig.lat || !sysConfig.lng) {
-                isDalamRadius = true; // Bebas absen kalau admin gak set lokasi
-                locStatus.innerText = "Mode Bebas Jarak";
-                locStatus.style.color = "var(--primary)";
-                locDist.innerText = "Admin tidak mengatur titik kumpul.";
+                isDalamRadius = true;
+                if(locStatus) { locStatus.innerText = "Mode Bebas Jarak"; locStatus.style.color = "var(--primary)"; }
+                if(locDist) { locDist.innerText = "Admin tidak mengatur titik kumpul."; }
                 return;
             }
 
@@ -663,26 +838,26 @@
                     
                     if(jarak <= toleransi) {
                         isDalamRadius = true;
-                        locStatus.innerText = "DALAM JANGKAUAN";
-                        locStatus.style.color = "var(--success)";
-                        locDist.innerText = `Jarak: ${jarak} meter (Aman)`;
+                        if(locStatus) { locStatus.innerText = "DALAM JANGKAUAN"; locStatus.style.color = "var(--success)"; }
+                        if(locDist) { locDist.innerText = `Jarak: ${jarak} meter (Aman)`; }
                     } else {
                         isDalamRadius = false;
-                        locStatus.innerText = "DI LUAR JANGKAUAN";
-                        locStatus.style.color = "var(--danger)";
-                        locDist.innerText = `Jarak: ${jarak} meter. (Maks: ${toleransi}m)`;
+                        if(locStatus) { locStatus.innerText = "DI LUAR JANGKAUAN"; locStatus.style.color = "var(--danger)"; }
+                        if(locDist) { locDist.innerText = `Jarak: ${jarak} meter. (Maks: ${toleransi}m)`; }
                     }
                 }, (err) => {
                     isDalamRadius = false;
-                    locStatus.innerText = "GPS TIDAK AKTIF";
-                    locStatus.style.color = "var(--danger)";
-                    locDist.innerText = "Tolong izinkan akses lokasi di browser kamu.";
+                    if(locStatus) { locStatus.innerText = "GPS TIDAK AKTIF"; locStatus.style.color = "var(--danger)"; }
+                    if(locDist) { locDist.innerText = "Tolong izinkan akses lokasi di browser kamu."; }
                 }, { enableHighAccuracy: true });
             }
         }
 
         function startScan() {
-            if(!sysConfig || !sysConfig.time) {
+            if(sudahAbsenHariIni) {
+                return showSysDialog({title:"SUDAH ABSEN", msg:"Kamu sudah absen hari ini. Tidak perlu scan QR lagi.", type:"success", color:"var(--success)"});
+            }
+            if(!sysConfig || !sysConfig.time || String(sysConfig.time).trim() === "") {
                 return showSysDialog({title:"DITUTUP", msg:"Jadwal absen saat ini sedang ditutup admin.", type:"error", color:"var(--danger)"});
             }
             if(!isDalamRadius) {
@@ -715,14 +890,12 @@
         }
 
         async function onScanSuccess(decodedText) {
-            stopScan(); // Matikan kamera setelah dapet data
+            stopScan(); 
             
-            // Format QR Admin: PRASAKA22_ABSEN_{DDMMYYYY}_{HH:MM}
             if(!decodedText.includes("PRASAKA22_ABSEN")) {
                 return showSysDialog({title:"QR INVALID", msg:"QR Code tidak dikenali oleh sistem PRASAKA.", type:"error", color:"var(--danger)"});
             }
 
-            // Tentukan Telat / Tepat Waktu
             const batasJamStr = sysConfig.time; 
             let statusKehadiran = "HADIR";
             
@@ -732,38 +905,56 @@
                 const currentMenit = now.getMinutes();
                 const totalMenitSekarang = (currentJam * 60) + currentMenit;
 
-                let batasJamStrClean = batasJamStr.replace("'", ""); // Handle single quote from sheet
+                let batasJamStrClean = String(batasJamStr).replace("'", "").trim(); 
+                
                 if (batasJamStrClean.includes('T')) {
-                     const d = new Date(batasJamStrClean);
-                     batasJamStrClean = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
+                     batasJamStrClean = batasJamStrClean.split('T')[1].substring(0, 5);
                 }
                 
-                const splitBatas = batasJamStrClean.split(":");
-                const batasJam = parseInt(splitBatas[0]);
-                const batasMenit = parseInt(splitBatas[1]);
-                const totalMenitBatas = (batasJam * 60) + batasMenit;
+                const matchTime = batasJamStrClean.match(/(\d{1,2}):(\d{2})/);
+                if (matchTime) {
+                    const batasJam = parseInt(matchTime[1], 10);
+                    const batasMenit = parseInt(matchTime[2], 10);
+                    const totalMenitBatas = (batasJam * 60) + batasMenit;
 
-                if (totalMenitSekarang > totalMenitBatas) {
-                    statusKehadiran = "TERLAMBAT";
-                } else {
-                    statusKehadiran = "TEPAT WAKTU";
+                    if (totalMenitSekarang > totalMenitBatas) {
+                        statusKehadiran = "TERLAMBAT";
+                    } else {
+                        statusKehadiran = "TEPAT WAKTU";
+                    }
                 }
             }
 
-            // Kirim data Absen
+            // PERBAIKAN: Telat = Minus 5 Poin
+            let poinOtomatis = 0;
+            if (statusKehadiran === "TEPAT WAKTU" || statusKehadiran === "HADIR") {
+                poinOtomatis = 10;
+            } else if (statusKehadiran === "TERLAMBAT") {
+                poinOtomatis = -5;
+            }
+
             showLoading(true);
             const tgl = new Date().toLocaleDateString('id-ID');
             const jam = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
             
-            const params = `action=attendance&nama=${encodeURIComponent(userData.nama)}&status=${statusKehadiran}&ket=Scan QR Lokasi&poin=0&date=${tgl}&time=${jam}`;
+            const paramsData = new URLSearchParams();
+            paramsData.append('action', 'attendance');
+            paramsData.append('nama', userData.nama);
+            paramsData.append('status', statusKehadiran);
+            paramsData.append('ket', 'Scan QR Lokasi');
+            paramsData.append('poin', poinOtomatis);
+            paramsData.append('date', tgl);
+            paramsData.append('time', jam);
             
             try {
-                const res = await requestData(params);
+                const res = await requestData(paramsData.toString());
                 showLoading(false);
                 if(res.status === "success") {
-                    showSysDialog({title:"ABSEN SUKSES", msg:`Kamu tercatat ${statusKehadiran}! Silakan kembali ke barisan.`, type:"success", color:"var(--success)"});
-                    tarikDataDashboard(); // Refresh riwayat
-                    sw('p-riwayat', document.querySelectorAll('.sb-link')[3]); // Lempar ke halaman riwayat
+                    // PERBAIKAN: Dialog membedakan + (plus) dan - (minus)
+                    let textPoin = poinOtomatis > 0 ? `+${poinOtomatis}` : poinOtomatis;
+                    showSysDialog({title:"ABSEN SUKSES", msg:`Kamu tercatat ${statusKehadiran}! (${textPoin} Poin Kedisiplinan)`, type:"success", color:"var(--success)"});
+                    tarikDataDashboard(); 
+                    sw('p-riwayat', document.querySelectorAll('.sb-link')[3]); 
                 } else {
                     showSysDialog({title:"GAGAL", msg:res.msg, type:"error", color:"var(--danger)"});
                 }
@@ -774,8 +965,10 @@
         }
 
         async function kirimIzin() {
-            // CEK STATUS RADAR/JADWAL ADMIN
-            if(!sysConfig || !sysConfig.time) {
+            if(sudahAbsenHariIni) {
+                return showSysDialog({title:"SUDAH MENGISI KEHADIRAN", msg:"Kamu sudah mengisi data kehadiran hari ini. Tidak bisa mengirim form izin lagi.", type:"warning", color:"var(--warning)"});
+            }
+            if(!sysConfig || !sysConfig.time || String(sysConfig.time).trim() === "") {
                 return showSysDialog({title:"SISTEM DITUTUP", msg:"Tidak ada jadwal latihan aktif saat ini. Kamu tidak bisa mengajukan izin.", type:"error", color:"var(--danger)"});
             }
 
@@ -799,8 +992,8 @@
                     document.getElementById('i-jenis').value = "";
                     document.getElementById('i-ket').value = "";
                     showSysDialog({title:"IZIN TERKIRIM", msg:"Surat izin kamu sudah masuk ke laporan admin.", type:"success", color:"var(--primary)"});
-                    tarikDataDashboard(); // Refresh riwayat
-                    sw('p-riwayat', document.querySelectorAll('.sb-link')[3]); // Lempar ke riwayat
+                    tarikDataDashboard(); 
+                    sw('p-riwayat', document.querySelectorAll('.sb-link')[3]); 
                 } else {
                     showSysDialog({title:"GAGAL", msg:res.msg, type:"error", color:"var(--danger)"});
                 }
@@ -810,29 +1003,45 @@
             }
         }
 
-        // --- INIT ---
-        window.onload = async () => { 
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark-theme');
+            localStorage.setItem('prasaka_user_theme', isDark ? 'dark' : 'light');
+            
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            if(isDark) {
+                if(icon) icon.setAttribute('data-lucide', 'sun');
+                if(text) text.innerText = 'GANTI MODE TERANG';
+            } else {
+                if(icon) icon.setAttribute('data-lucide', 'moon');
+                if(text) text.innerText = 'GANTI MODE GELAP';
+            }
             lucide.createIcons();
+        }
+
+        function hubungiCS() {
+            const noWaCS = "628989599240"; 
+            const namaSiswa = userData ? userData.nama : "Siswa";
+            const pesanCS = `Halo Kak Pelatih, saya ${namaSiswa} izin bertanya dan butuh bantuan terkait absen PRASAKA...`;
+            window.open(`https://wa.me/${noWaCS}?text=${encodeURIComponent(pesanCS)}`, '_blank');
+        }
+
+        window.onload = () => { 
+            lucide.createIcons();
+            
+            const savedTheme = localStorage.getItem('prasaka_user_theme');
+            if(savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                const icon = document.getElementById('theme-icon');
+                if(icon) icon.setAttribute('data-lucide', 'sun');
+                const text = document.getElementById('theme-text');
+                if(text) text.innerText = 'GANTI MODE TERANG';
+                lucide.createIcons();
+            }
+
             const s = localStorage.getItem('siswa_auth'); 
             if(s) { 
-                const authData = JSON.parse(s);
-                showLoading(true);
-                
-                try {
-                    // VALIDASI ULANG KE EXCEL
-                    const data = await requestData(`action=loginSiswa&nama=${encodeURIComponent(authData.nama)}&pin=${encodeURIComponent(authData.pin)}`);
-                    showLoading(false);
-                    
-                    if(data.status === "success" && data.user.status === "ACTIVE") {
-                        masukSistem(data.user); 
-                    } else {
-                        throw new Error("Sesi tidak valid");
-                    }
-                } catch(e) {
-                    showLoading(false);
-                    localStorage.removeItem('siswa_auth');
-                    showSysDialog({title:"SESI HABIS", msg:"Akun kamu tidak ditemukan di database atau sudah dihapus/dinonaktifkan Admin.", type:"error", color:"var(--danger)"});
-                }
+                masukSistem(JSON.parse(s)); 
             }
         };
     </script>
