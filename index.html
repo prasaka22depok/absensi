@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -7,6 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
         :root {
             /* TEMA PUTIH BIRU */
@@ -112,13 +117,11 @@
 </head>
 <body>
 
-    <!-- LOADING OVERLAY -->
     <div id="loading-overlay">
         <div class="spinner"></div>
         <h2 style="font-weight:900; letter-spacing:2px; color:var(--primary); font-size:12px; margin-top:20px;">MEMPROSES...</h2>
     </div>
 
-    <!-- DIALOG POPUP -->
     <div id="sys-dialog">
         <div class="dialog-card">
             <div id="sys-dialog-icon" style="margin-bottom:15px;"></div>
@@ -128,13 +131,11 @@
         </div>
     </div>
 
-    <!-- LOGIN SCREEN -->
     <div id="auth-screen">
         <div class="auth-card">
             <img src="https://files.catbox.moe/e1jb6d.png" alt="Logo PRASAKA" style="width: 80px; height: 80px; object-fit: contain; border-radius: 20px; margin: 0 auto 20px; box-shadow: var(--shadow); border: 2px solid var(--primary-light); display: block;">
             <h2 class="auth-title">LOGIN ANGGOTA</h2>
             
-            <!-- FORM LOGIN -->
             <div id="login-form">
                 <p class="auth-subtitle">Masukkan Nama dan PIN untuk absen.</p>
                 <input type="text" id="l-nama" class="auth-input" placeholder="NAMA LENGKAP" style="text-transform: uppercase;">
@@ -143,7 +144,6 @@
                 <button onclick="toggleAuthUser()" class="auth-switch">DAFTAR ANGGOTA BARU</button>
             </div>
 
-            <!-- FORM REGISTER -->
             <div id="reg-form" style="display: none;">
                 <p class="auth-subtitle">Daftar untuk membuat akun PRASAKA.</p>
                 <input type="text" id="r-nama" class="auth-input" placeholder="NAMA LENGKAP" style="text-transform: uppercase;">
@@ -160,9 +160,7 @@
         </div>
     </div>
 
-    <!-- MAIN APP -->
     <div id="main-content">
-        <!-- SIDEBAR -->
         <div id="overlay" onclick="toggleSidebar()"></div>
         <div id="sidebar">
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;">
@@ -191,7 +189,6 @@
             <button onclick="logoutSiswa()" class="sb-link btn-logout" style="flex-shrink: 0;"><i data-lucide="log-out"></i> Keluar Akun</button>
         </div>
 
-        <!-- HEADER -->
         <header>
             <button class="btn-menu" onclick="toggleSidebar()"><i data-lucide="menu"></i></button>
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -204,9 +201,7 @@
             </button>
         </header>
 
-        <!-- PAGES -->
         <main>
-            <!-- 1. BERANDA (SIMPEL) -->
             <div id="p-beranda" class="page active">
                 
                 <div id="marquee-container" style="display:none; background: var(--primary-light); color: var(--primary); padding: 12px 15px; border-radius: 16px; margin-bottom: 20px; font-size: 11px; font-weight: 700; align-items: center; gap: 10px; border: 1px solid #dbeafe;">
@@ -239,15 +234,16 @@
                 </button>
             </div>
 
-            <!-- 2. HALAMAN ABSEN -->
             <div id="p-absen" class="page">
-                <div class="card">
-                    <div class="card-header"><i data-lucide="map-pin"></i> Verifikasi Lokasi</div>
-                    <div style="background: var(--bg); padding: 15px; border-radius: 16px; margin-bottom: 20px;">
+                <div class="card" style="padding: 20px 15px;">
+                    <div class="card-header"><i data-lucide="map-pin"></i> Verifikasi Jarak & Lokasi</div>
+                    <div style="background: var(--bg); padding: 15px; border-radius: 16px; margin-bottom: 15px;">
                         <p style="font-size: 10px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px;">STATUS LOKASI KAMU:</p>
                         <h4 id="loc-status" style="font-size: 14px; font-weight: 900; color: var(--primary);">Menunggu Sinyal GPS...</h4>
                         <p id="loc-distance" style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">-</p>
                     </div>
+
+                    <div id="map" style="width: 100%; height: 220px; border-radius: 16px; margin-bottom: 15px; border: 1px solid var(--border); z-index: 1;"></div>
 
                     <div id="reader"></div>
 
@@ -258,13 +254,12 @@
                         BATALKAN SCAN
                     </button>
                     
-                    <p style="text-align: center; font-size: 10px; color: var(--text-muted); font-weight: 600; margin-top: 15px;">
-                        *Pastikan GPS menyala dan kamu berada di area latihan.
+                    <p style="text-align: center; font-size: 10px; color: var(--text-muted); font-weight: 600; margin-top: 10px;">
+                        *Pastikan GPS HP aktif dan penanda lokasi kamu berada di dalam lingkaran hijau peta.
                     </p>
                 </div>
             </div>
 
-            <!-- 3. FORM IZIN -->
             <div id="p-izin" class="page">
                 <div class="card">
                     <div class="card-header"><i data-lucide="clipboard-edit"></i> Formulir Izin Latihan</div>
@@ -288,7 +283,6 @@
                 </div>
             </div>
 
-            <!-- 4. RIWAYAT SAYA -->
             <div id="p-riwayat" class="page">
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                     <div class="stat-box" style="padding: 15px 10px;">
@@ -308,12 +302,10 @@
                 <div class="card" style="padding: 0; overflow: hidden;">
                     <div class="card-header" style="padding: 20px 20px 0;"><i data-lucide="history"></i> Riwayat Absen Kamu</div>
                     <div id="list-riwayat" style="padding: 0 20px 20px;">
-                        <!-- List riwayat di-generate JS -->
-                    </div>
+                        </div>
                 </div>
             </div>
 
-            <!-- 5. HALAMAN LEADERBOARD -->
             <div id="p-peringkat" class="page">
                 <div class="card" style="padding: 25px 20px;">
                     <div style="text-align: center; margin-bottom: 25px;">
@@ -325,12 +317,10 @@
                     </div>
 
                     <div id="list-peringkat-user">
-                        <!-- Data Peringkat Digenerate JS -->
-                    </div>
+                        </div>
                 </div>
             </div>
 
-            <!-- 6. PROFIL SAYA -->
             <div id="p-prof" class="page">
                 <div class="card" style="text-align: center; padding: 40px 20px;">
                     <div class="auth-logo" id="prof-avatar" style="width: 90px; height: 90px; font-size: 36px; margin-bottom: 15px; background: var(--primary-grad); color: white; border-radius: 30px;">A</div>
@@ -339,7 +329,6 @@
 
                     <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 20px; text-align: left; margin-bottom: 10px;">
                         
-                        <!-- TAMBAHAN: Menampilkan Poin di Profil -->
                         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px; align-items: center;">
                             <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px;"><i data-lucide="star" style="width: 14px;"></i> Total Poin</span>
                             <span id="prof-poin" style="font-size: 12px; font-weight: 900; color: #d97706;">0 PTS</span>
@@ -369,7 +358,6 @@
             </div>
         </main>
 
-        <!-- TOMBOL CUSTOMER SERVICE -->
         <button id="cs-btn" onclick="hubungiCS()" title="Butuh Bantuan?">
             <i data-lucide="headphones" style="width: 28px; height: 28px;"></i>
         </button>
@@ -384,6 +372,12 @@
         let html5QrcodeScanner = null;
         let isDalamRadius = false;
         let sudahAbsenHariIni = false; // VARIABEL PENGUNCI ABSEN
+
+        // VARIABEL GLOBAL UNTUK TRACKING PETA LIVE GPS
+        let mapInstance = null;
+        let userMarker = null;
+        let latihanMarker = null;
+        let radiusCircle = null;
 
         function requestData(params) {
             return new Promise(async (resolve, reject) => {
@@ -445,6 +439,13 @@
             }
             document.getElementById('sidebar').classList.remove('open');
             document.getElementById('overlay').style.display = 'none';
+
+            // RE-FRESH UKURAN MAP LEAFLET SAAT HALAMAN ABSEN DIBUKA (MENCEGAH BUG ELEMENT BLANK)
+            if (id === 'p-absen' && mapInstance) {
+                setTimeout(() => {
+                    mapInstance.invalidateSize();
+                }, 300);
+            }
 
             // Auto-refresh config saat pindah menu
             if (userData) {
@@ -696,7 +697,7 @@
                     nama: s.nama,
                     role: s.role,
                     angkatan: s.angkatan,
-                    poin: poinPermanen // Poin murni dari database Data Siswa (bebas hapus log)
+                    poin: poinPermanen 
                 };
             });
 
@@ -786,10 +787,9 @@
                 if(l.status === 'HADIR' || l.status === 'TEPAT WAKTU') { color = "var(--success)"; bg = "#ecfdf5"; }
                 else if(l.status === 'IZIN') { color = "var(--primary)"; bg = "var(--primary-light)"; }
 
-                // PERBAIKAN: Menampilkan desain khusus jika poinnya minus
                 let pStr = String(l.poin || "0").replace(/[^0-9-]/g, '');
                 let pVal = parseInt(pStr);
-                let displayPoin = pVal > 0 ? `+${pVal}` : pVal; // tambah teks + jika positif
+                let displayPoin = pVal > 0 ? `+${pVal}` : pVal;
 
                 return `
                 <div class="log-item">
@@ -817,24 +817,81 @@
             return Math.floor(R * c);
         }
 
+        // FUNGSI UNTUK MERENDER DAN UPDATE PETA SATELIT SECARA REALTIME
+        function initMap(userLat, userLng, targetLat, targetLng, radius) {
+            if (!document.getElementById('map')) return;
+
+            // Jika peta belum dibuat, inisialisasi baru
+            if (!mapInstance) {
+                mapInstance = L.map('map').setView([userLat, userLng], 17);
+
+                // Memakai Layer Esri World Imagery (Foto Satelit Nyata)
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS'
+                }).addTo(mapInstance);
+
+                // Tambah Marker posisi user saat ini
+                userMarker = L.marker([userLat, userLng]).addTo(mapInstance)
+                    .bindPopup('<b>Lokasi Kamu</b>').openPopup();
+
+                // Jika admin mengatur titik kumpul, gambar pin target dan lingkaran radiusnya
+                if (targetLat && targetLng) {
+                    latihanMarker = L.marker([targetLat, targetLng]).addTo(mapInstance)
+                        .bindPopup('<b>Titik Kumpul PRASAKA</b>');
+                    
+                    radiusCircle = L.circle([targetLat, targetLng], {
+                        color: '#10b981',      // Warna Garis Lingkaran (Hijau)
+                        fillColor: '#10b981',  // Isian Lingkaran
+                        fillOpacity: 0.15,
+                        radius: radius
+                    }).addTo(mapInstance);
+                }
+            } else {
+                // Jika peta sudah ada di memori, lakukan update posisi marker & radius saja biar mulus
+                if (userMarker) userMarker.setLatLng([userLat, userLng]);
+                
+                if (targetLat && targetLng) {
+                    if (latihanMarker) latihanMarker.setLatLng([targetLat, targetLng]);
+                    if (radiusCircle) {
+                        radiusCircle.setLatLng([targetLat, targetLng]);
+                        radiusCircle.setRadius(radius);
+                    }
+                }
+                
+                // Kamera otomatis mengikuti/bergeser ke lokasi terupdate user
+                mapInstance.panTo([userLat, userLng]);
+            }
+        }
+
         function cekLokasiGPS() {
             const locStatus = document.getElementById('loc-status');
             const locDist = document.getElementById('loc-distance');
             
-            if(!sysConfig.lat || !sysConfig.lng) {
+            const targetLat = sysConfig && sysConfig.lat ? parseFloat(sysConfig.lat) : null;
+            const targetLng = sysConfig && sysConfig.lng ? parseFloat(sysConfig.lng) : null;
+            const toleransi = sysConfig && sysConfig.tol ? parseInt(sysConfig.tol) : 100;
+
+            if(!targetLat || !targetLng) {
                 isDalamRadius = true;
                 if(locStatus) { locStatus.innerText = "Mode Bebas Jarak"; locStatus.style.color = "var(--primary)"; }
                 if(locDist) { locDist.innerText = "Admin tidak mengatur titik kumpul."; }
+                
+                // Mencoba render peta lokasi user saja saat mode bebas jarak aktif
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((pos) => {
+                        initMap(pos.coords.latitude, pos.coords.longitude, null, null, toleransi);
+                    }, () => {}, { enableHighAccuracy: true });
+                }
                 return;
             }
 
             if (navigator.geolocation) {
+                // Menggunakan watchPosition agar lokasi terus terupdate secara live di satelit map
                 navigator.geolocation.watchPosition((pos) => {
                     const myLat = pos.coords.latitude;
                     const myLng = pos.coords.longitude;
-                    const toleransi = parseInt(sysConfig.tol) || 100;
                     
-                    const jarak = getDistance(myLat, myLng, sysConfig.lat, sysConfig.lng);
+                    const jarak = getDistance(myLat, myLng, targetLat, targetLng);
                     
                     if(jarak <= toleransi) {
                         isDalamRadius = true;
@@ -845,6 +902,10 @@
                         if(locStatus) { locStatus.innerText = "DI LUAR JANGKAUAN"; locStatus.style.color = "var(--danger)"; }
                         if(locDist) { locDist.innerText = `Jarak: ${jarak} meter. (Maks: ${toleransi}m)`; }
                     }
+
+                    // Panggil inisialisasi / perbarui peta satelit live
+                    initMap(myLat, myLng, targetLat, targetLng, toleransi);
+
                 }, (err) => {
                     isDalamRadius = false;
                     if(locStatus) { locStatus.innerText = "GPS TIDAK AKTIF"; locStatus.style.color = "var(--danger)"; }
@@ -889,7 +950,7 @@
             }
         }
 
-        async function onScanSuccess(decodedText) {
+       async function onScanSuccess(decodedText) {
             stopScan(); 
             
             if(!decodedText.includes("PRASAKA22_ABSEN")) {
@@ -925,7 +986,6 @@
                 }
             }
 
-            // PERBAIKAN: Telat = Minus 5 Poin
             let poinOtomatis = 0;
             if (statusKehadiran === "TEPAT WAKTU" || statusKehadiran === "HADIR") {
                 poinOtomatis = 10;
@@ -950,7 +1010,6 @@
                 const res = await requestData(paramsData.toString());
                 showLoading(false);
                 if(res.status === "success") {
-                    // PERBAIKAN: Dialog membedakan + (plus) dan - (minus)
                     let textPoin = poinOtomatis > 0 ? `+${poinOtomatis}` : poinOtomatis;
                     showSysDialog({title:"ABSEN SUKSES", msg:`Kamu tercatat ${statusKehadiran}! (${textPoin} Poin Kedisiplinan)`, type:"success", color:"var(--success)"});
                     tarikDataDashboard(); 
@@ -960,10 +1019,9 @@
                 }
             } catch(e) {
                 showLoading(false);
-                showSysDialog({title:"KONEKSI PUTUS", msg:"Gagal mengirim data absen.", type:"error", color:"var(--danger)"});
+                showSysDialog({title:"KONEKSI PUTUS", msg:"Gagal mengirim data absen.", type:"error", color: "var(--danger)"});
             }
         }
-
         async function kirimIzin() {
             if(sudahAbsenHariIni) {
                 return showSysDialog({title:"SUDAH MENGISI KEHADIRAN", msg:"Kamu sudah mengisi data kehadiran hari ini. Tidak bisa mengirim form izin lagi.", type:"warning", color:"var(--warning)"});
